@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #FBFBF8;
+  --ink: #19222E;
+  --muted: #6A7280;
+  --line: #E5E0D4;
+  --stitch: #B23A2E;
+  --good: #2F6B4F;
+  --accent: #C45C26;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utility classes matching your current design language */
+.card {
+  @apply bg-white border border-line rounded-xl p-4;
+}
+
+.kpi {
+  @apply bg-white border border-line rounded-xl p-4;
+}
+
+.kpi .label {
+  @apply text-xs uppercase tracking-wider text-muted mb-1;
+}
+
+.kpi .value {
+  @apply text-2xl font-bold;
+}
+
+.btn {
+  @apply w-full py-3 px-4 rounded-xl font-semibold text-white bg-ink hover:opacity-90 transition;
+}
+
+.btn-ghost {
+  @apply w-full py-3 px-4 rounded-xl font-semibold border border-line bg-white text-ink hover:bg-paper transition;
+}
+
+.input {
+  @apply w-full py-3 px-3 rounded-lg border border-line bg-white text-ink outline-none focus:border-ink;
+}
+
+.label {
+  @apply block text-xs font-bold uppercase tracking-wider text-muted mb-1;
+}
+
+.pos { color: var(--good); }
+.neg { color: var(--stitch); }
