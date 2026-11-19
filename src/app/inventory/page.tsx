@@ -139,7 +139,7 @@ export default function InventoryPage() {
         ) : (
           <div className="space-y-2">
             {filtered.map((it) => (
-              <div key={it.id} className="card">
+              <Link key={it.id} href={`/inventory/${it.id}`} className="card block hover:bg-paper/50 transition">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-semibold">{it.name}</div>
@@ -156,12 +156,9 @@ export default function InventoryPage() {
                   <div className="text-right">
                     <div className="font-bold text-sm">${Number(it.avg_cost).toFixed(2)}</div>
                     <div className="text-xs text-muted">avg</div>
-                    {it.qty_remaining > 0 && (
-                      <button onClick={() => openSale(it)} className="mt-1 text-xs font-semibold text-accent">Log Sale</button>
-                    )}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
