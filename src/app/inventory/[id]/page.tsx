@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { logSale } from '@/lib/sales';
+import { getBins, moveToBin } from '@/lib/bins';
 import type { ItemStats } from '@/types';
 
 export default function ItemDetailPage() {
@@ -29,6 +30,12 @@ export default function ItemDetailPage() {
   const [lots, setLots] = useState<{id: string; vendor: string | null}[]>([]);
   const [selectedLot, setSelectedLot] = useState('');
 
+  // Bins
+  const [bins, setBins] = useState<string[]>([]);
+  const [selectedBin, setSelectedBin] = useState('');
+  const [newBin, setNewBin] = useState('WNBX1');
+  const [binQty, setBinQty] = useState('1');
+
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -50,6 +57,9 @@ export default function ItemDetailPage() {
       .order('id');
     setLots(lotData || []);
     if (data?.lot_id) setSelectedLot(data.lot_id);
+
+    const binList = await getBins();
+    setBins(binList);
 
     setLoading(false);
   }
@@ -115,6 +125,30 @@ export default function ItemDetailPage() {
       .update({ lot_id: selectedLot || null })
       .eq('id', item.id);
     await load();
+    setSaving(false);
+  }
+
+  async function handleMoveToBin() {
+    if (!item) return;
+    const binId = selectedBin || newBin.trim();
+    if (!binId) return alert('Choose or enter a bin');
+    const q = parseInt(binQty) || 1;
+    if (q > item.qty_remaining) return alert('Not enough remaining');
+    setSaving(true);
+    try {
+      await moveToBin({
+        item_id: item.id,
+        lot_id: item.lot_id,
+        bin_id: binId.toUpperCase(),
+        qty: q,
+      });
+      setSelectedBin('');
+      setNewBin('WNBX1');
+      setBinQty('1');
+      await load();
+    } catch (e: any) {
+      alert(e.message);
+    }
     setSaving(false);
   }
 
@@ -229,6 +263,31 @@ export default function ItemDetailPage() {
             <button className="btn-ghost px-4" onClick={handleSaveLot} disabled={saving}>Save</button>
           </div>
         </div>
+
+        {/* Move to Whatnot Bin */}
+        {item.qty_remaining > 0 && (
+          <div className="card space-y-3">
+            <div className="font-semibold text-sm">Move to a Whatnot bin</div>
+            <div>
+              <label className="label">Existing bin</label>
+              <select className="input" value={selectedBin} onChange={e => setSelectedBin(e.target.value)}>
+                <option value="">— choose bin —</option>
+                {bins.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Or new bin ID</label>
+                <input className="input" value={newBin} onChange={e => setNewBin(e.target.value)} placeholder="WNBX1" />
+              </div>
+              <div>
+                <label className="label">Qty to move</label>
+                <input className="input" type="number" min="1" max={item.qty_remaining} value={binQty} onChange={e => setBinQty(e.target.value)} />
+              </div>
+            </div>
+            <button className="btn-ghost" onClick={handleMoveToBin} disabled={saving}>Move to bin</button>
+          </div>
+        )}
 
         <div className="text-center">
           <button className="text-sm text-muted underline" onClick={() => router.back()}>Close</button>
