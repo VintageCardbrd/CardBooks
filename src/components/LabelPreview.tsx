@@ -102,13 +102,36 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     setReady(true);
   }
 
-  function downloadLabel() {
+  async function downloadLabel() {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/png')
+    );
+    if (!blob) return;
+
+    const file = new File([blob], `${itemId}-label.png`, { type: 'image/png' });
+
+    // Use the system share sheet when available (iPhone, Android)
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: `${itemId} label`,
+        });
+        return;
+      } catch (e) {
+        // User cancelled or share failed — fall through to download
+      }
+    }
+
+    // Fallback: regular download
     const link = document.createElement('a');
     link.download = `${itemId}-label.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = URL.createObjectURL(blob);
     link.click();
+    URL.revokeObjectURL(link.href);
   }
 
   async function printToNiimbot() {
@@ -184,7 +207,7 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
             <div className="text-xs text-center text-muted">{printStatus}</div>
           )}
           <button className="btn-ghost" onClick={downloadLabel} disabled={!ready}>
-            Download label image
+            Share / Save label
           </button>
           <div className="text-xs text-muted text-center">
             Print works in Chrome (Android/desktop). Download always works for the NIIMBOT app.
