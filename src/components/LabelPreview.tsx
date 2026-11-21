@@ -53,36 +53,46 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     try {
       const qrCanvas = document.createElement('canvas');
       await QRCode.toCanvas(qrCanvas, url, {
-        width: 80,
+        width: 72,
         margin: 1,
         errorCorrectionLevel: 'M',
       });
-      ctx.drawImage(qrCanvas, 8, 8);
+      ctx.drawImage(qrCanvas, 6, 12);
     } catch (e) {
       console.error(e);
     }
 
-    // Text to the right of the QR, horizontal
-    ctx.fillStyle = '#000000';
+    // Price (large) + ID in parentheses (small) to the right of QR
     ctx.textAlign = 'left';
-    ctx.font = 'bold 16px system-ui, sans-serif';
-
-    // Wrap or truncate name to fit
-    const maxWidth = length - 100;
-    let displayName = itemName;
-    while (ctx.measureText(displayName).width > maxWidth && displayName.length > 5) {
-      displayName = displayName.slice(0, -2) + '…';
-    }
-    ctx.fillText(displayName, 96, 32);
+    const textX = 86;
 
     if (askingPrice) {
-      ctx.font = 'bold 18px system-ui, sans-serif';
-      ctx.fillText(`$${parseFloat(askingPrice).toFixed(2)}`, 96, 58);
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 22px system-ui, sans-serif';
+      const priceText = `$${parseFloat(askingPrice).toFixed(2)}`;
+      ctx.fillText(priceText, textX, 38);
+
+      // ID in small print next to price
+      const priceWidth = ctx.measureText(priceText).width;
+      ctx.font = '10px system-ui, sans-serif';
+      ctx.fillStyle = '#555';
+      ctx.fillText(`(${itemId})`, textX + priceWidth + 4, 36);
+    } else {
+      // If no price, still show ID
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.fillStyle = '#555';
+      ctx.fillText(`(${itemId})`, textX, 38);
     }
 
-    ctx.font = '12px system-ui, sans-serif';
-    ctx.fillStyle = '#444';
-    ctx.fillText(itemId, 96, 78);
+    // Card name on the bottom line
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    const maxNameWidth = length - textX - 8;
+    let displayName = itemName;
+    while (ctx.measureText(displayName).width > maxNameWidth && displayName.length > 4) {
+      displayName = displayName.slice(0, -2) + '…';
+    }
+    ctx.fillText(displayName, textX, 68);
 
     ctx.restore();
     setReady(true);
