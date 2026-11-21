@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { logSale } from '@/lib/sales';
 import { getBins, moveToBin } from '@/lib/bins';
+import LabelPreview from '@/components/LabelPreview';
 import type { ItemStats } from '@/types';
 
 export default function ItemDetailPage() {
@@ -35,6 +36,7 @@ export default function ItemDetailPage() {
   const [selectedBin, setSelectedBin] = useState('');
   const [newBin, setNewBin] = useState('WNBX1');
   const [binQty, setBinQty] = useState('1');
+  const [showLabel, setShowLabel] = useState(false);
 
   const [saving, setSaving] = useState(false);
 
@@ -289,10 +291,22 @@ export default function ItemDetailPage() {
           </div>
         )}
 
+        <button className="btn" onClick={() => setShowLabel(true)}>
+          Show / Print Label
+        </button>
+
         <div className="text-center">
           <button className="text-sm text-muted underline" onClick={() => router.back()}>Close</button>
         </div>
       </div>
+
+      {showLabel && item && (
+        <LabelPreview
+          itemId={item.id}
+          itemName={item.name}
+          onClose={() => setShowLabel(false)}
+        />
+      )}
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-line">
         <div className="max-w-lg mx-auto flex">
