@@ -8,7 +8,8 @@ export async function getBins() {
     .order('bin_id');
 
   if (error) return [];
-  const unique = [...new Set((data || []).map((r: any) => r.bin_id).filter(Boolean))];
+  const ids = (data || []).map((r: any) => r.bin_id).filter(Boolean);
+  const unique = Array.from(new Set(ids));
   return unique as string[];
 }
 
