@@ -32,17 +32,24 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // D110 printhead is 96px wide. Make a vertical label that fits.
-    const w = 96;
-    const h = 280;
-    canvas.width = w;
-    canvas.height = h;
+    // D110: printhead is 96px (narrow). Feed direction is the long axis.
+    // Rotate content so text runs along the length of the label.
+    const printhead = 96;
+    const length = 320;
+    canvas.width = printhead;
+    canvas.height = length;
 
-    // White background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, printhead, length);
 
-    // QR code (centered near top)
+    // Draw content rotated 90° so it reads horizontally along the label length
+    ctx.save();
+    ctx.translate(printhead / 2, length / 2);
+    ctx.rotate(-Math.PI / 2); // rotate so text is horizontal relative to label length
+    ctx.translate(-length / 2, -printhead / 2);
+
+    // Now drawing in a virtual canvas of length x printhead
+    // QR on the left
     try {
       const qrCanvas = document.createElement('canvas');
       await QRCode.toCanvas(qrCanvas, url, {
@@ -50,34 +57,34 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
         margin: 1,
         errorCorrectionLevel: 'M',
       });
-      const qrX = Math.floor((w - 80) / 2);
-      ctx.drawImage(qrCanvas, qrX, 8);
+      ctx.drawImage(qrCanvas, 8, 8);
     } catch (e) {
       console.error(e);
     }
 
-    // Name (wrap or truncate)
+    // Text to the right of the QR, horizontal
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 11px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    const maxChars = 14;
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 16px system-ui, sans-serif';
+
+    // Wrap or truncate name to fit
+    const maxWidth = length - 100;
     let displayName = itemName;
-    if (displayName.length > maxChars) {
-      displayName = displayName.slice(0, maxChars - 1) + '…';
+    while (ctx.measureText(displayName).width > maxWidth && displayName.length > 5) {
+      displayName = displayName.slice(0, -2) + '…';
     }
-    ctx.fillText(displayName, w / 2, 102);
+    ctx.fillText(displayName, 96, 32);
 
-    // Price
     if (askingPrice) {
-      ctx.font = 'bold 14px system-ui, sans-serif';
-      ctx.fillText(`$${parseFloat(askingPrice).toFixed(2)}`, w / 2, 124);
+      ctx.font = 'bold 18px system-ui, sans-serif';
+      ctx.fillText(`$${parseFloat(askingPrice).toFixed(2)}`, 96, 58);
     }
 
-    // ID
-    ctx.font = '9px system-ui, sans-serif';
-    ctx.fillStyle = '#555';
-    ctx.fillText(itemId, w / 2, 142);
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillStyle = '#444';
+    ctx.fillText(itemId, 96, 78);
 
+    ctx.restore();
     setReady(true);
   }
 
@@ -118,8 +125,8 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
         label_type: 1,
         speed: 1,
       };
-      // Match the canvas we generated (96 wide x 280 tall)
-      const size = { w_px: 96, h_px: 280, offset_y_px: -2 };
+      // Match the canvas (96 wide x 320 tall)
+      const size = { w_px: 96, h_px: 320, offset_y_px: -2 };
 
       // Convert canvas to data URL and print
       const dataUrl = canvasRef.current.toDataURL('image/png');
