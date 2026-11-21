@@ -66,33 +66,37 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     ctx.textAlign = 'left';
     const textX = 86;
 
+    // Disable smoothing for sharper thermal output
+    ctx.imageSmoothingEnabled = false;
+
     if (askingPrice) {
       ctx.fillStyle = '#000000';
-      ctx.font = 'bold 22px system-ui, sans-serif';
+      ctx.font = 'bold 24px system-ui, sans-serif';
       const priceText = `$${parseFloat(askingPrice).toFixed(2)}`;
-      ctx.fillText(priceText, textX, 38);
+      // Draw twice with slight offset for heavier stroke
+      ctx.fillText(priceText, textX, 40);
+      ctx.fillText(priceText, textX + 0.5, 40);
 
-      // ID in small print next to price
       const priceWidth = ctx.measureText(priceText).width;
-      ctx.font = '10px system-ui, sans-serif';
-      ctx.fillStyle = '#555';
-      ctx.fillText(`(${itemId})`, textX + priceWidth + 4, 36);
+      ctx.font = 'bold 11px system-ui, sans-serif';
+      ctx.fillStyle = '#000000';
+      ctx.fillText(`(${itemId})`, textX + priceWidth + 6, 38);
     } else {
-      // If no price, still show ID
-      ctx.font = '12px system-ui, sans-serif';
-      ctx.fillStyle = '#555';
-      ctx.fillText(`(${itemId})`, textX, 38);
+      ctx.font = 'bold 12px system-ui, sans-serif';
+      ctx.fillStyle = '#000000';
+      ctx.fillText(`(${itemId})`, textX, 40);
     }
 
-    // Card name on the bottom line
+    // Card name on the bottom line (bolder)
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.font = 'bold 15px system-ui, sans-serif';
     const maxNameWidth = length - textX - 8;
     let displayName = itemName;
     while (ctx.measureText(displayName).width > maxNameWidth && displayName.length > 4) {
       displayName = displayName.slice(0, -2) + '…';
     }
-    ctx.fillText(displayName, textX, 68);
+    ctx.fillText(displayName, textX, 70);
+    ctx.fillText(displayName, textX + 0.4, 70); // slight double-draw for weight
 
     ctx.restore();
     setReady(true);
@@ -131,7 +135,7 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
       const model = {
         name_prefixes: ['D110'],
         task: 'b1',
-        density: 3,
+        density: 5,
         label_type: 1,
         speed: 1,
       };
