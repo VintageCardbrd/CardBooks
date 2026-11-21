@@ -32,41 +32,51 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Label size for D110 ~15mm width labels (roughly 200x80 px at screen res for preview)
-    canvas.width = 320;
-    canvas.height = 120;
+    // D110 printhead is 96px wide. Make a vertical label that fits.
+    const w = 96;
+    const h = 280;
+    canvas.width = w;
+    canvas.height = h;
 
     // White background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, w, h);
 
-    // QR code
+    // QR code (centered near top)
     try {
       const qrCanvas = document.createElement('canvas');
       await QRCode.toCanvas(qrCanvas, url, {
-        width: 90,
+        width: 80,
         margin: 1,
         errorCorrectionLevel: 'M',
       });
-      ctx.drawImage(qrCanvas, 10, 15);
+      const qrX = Math.floor((w - 80) / 2);
+      ctx.drawImage(qrCanvas, qrX, 8);
     } catch (e) {
       console.error(e);
     }
 
-    // Text
+    // Name (wrap or truncate)
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 14px system-ui, sans-serif';
-    const name = itemName.length > 28 ? itemName.slice(0, 26) + '…' : itemName;
-    ctx.fillText(name, 110, 40);
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    const maxChars = 14;
+    let displayName = itemName;
+    if (displayName.length > maxChars) {
+      displayName = displayName.slice(0, maxChars - 1) + '…';
+    }
+    ctx.fillText(displayName, w / 2, 102);
 
+    // Price
     if (askingPrice) {
-      ctx.font = 'bold 16px system-ui, sans-serif';
-      ctx.fillText(`$${parseFloat(askingPrice).toFixed(2)}`, 110, 68);
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText(`$${parseFloat(askingPrice).toFixed(2)}`, w / 2, 124);
     }
 
-    ctx.font = '11px system-ui, sans-serif';
+    // ID
+    ctx.font = '9px system-ui, sans-serif';
     ctx.fillStyle = '#555';
-    ctx.fillText(itemId, 110, 92);
+    ctx.fillText(itemId, w / 2, 142);
 
     setReady(true);
   }
@@ -100,7 +110,7 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
         throw new Error('Web Bluetooth not supported in this browser. Use Chrome on Android or desktop.');
       }
 
-      // D110 model config (from library registry)
+      // D110 model config
       const model = {
         name_prefixes: ['D110'],
         task: 'b1',
@@ -108,8 +118,8 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
         label_type: 1,
         speed: 1,
       };
-      // Approximate size for a short label on D110 (96px wide printhead)
-      const size = { w_px: 96, h_px: 200, offset_y_px: -2 };
+      // Match the canvas we generated (96 wide x 280 tall)
+      const size = { w_px: 96, h_px: 280, offset_y_px: -2 };
 
       // Convert canvas to data URL and print
       const dataUrl = canvasRef.current.toDataURL('image/png');
@@ -142,7 +152,7 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
         </div>
 
         <div className="border border-line rounded-lg p-3 bg-gray-50 flex justify-center mb-4">
-          <canvas ref={canvasRef} className="max-w-full" />
+          <canvas ref={canvasRef} className="max-w-full" style={{ imageRendering: 'pixelated', width: '160px', height: 'auto' }} />
         </div>
 
         <div className="space-y-2">
