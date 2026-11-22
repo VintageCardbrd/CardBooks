@@ -107,22 +107,39 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="kpi">
-                <div className="label">Units Remaining</div>
-                <div className="value">{data.unitsRemaining}</div>
+            {/* Top metrics matching requested structure */}
+            <div className="text-xs font-semibold tracking-wider text-muted">INVENTORY HEALTH</div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="card text-center py-3">
+                <div className="text-xs text-muted">CAPITAL TIED UP</div>
+                <div className="font-bold text-lg">{money(data.capitalTiedUp)}</div>
               </div>
-              <div className="kpi">
-                <div className="label">Units Sold</div>
-                <div className="value">{data.unitsSold}</div>
+              <div className="card text-center py-3">
+                <div className="text-xs text-muted">SELL-THROUGH ALL TIME</div>
+                <div className="font-bold text-lg">{data.sellThrough.toFixed(0)}%</div>
               </div>
-              <div className="kpi">
-                <div className="label">30-day Sold</div>
-                <div className="value">{data.sellThrough30}</div>
+              <div className="card text-center py-3">
+                <div className="text-xs text-muted">MEDIAN DAYS</div>
+                <div className="font-bold text-lg">{data.medianDays}</div>
               </div>
-              <div className="kpi">
-                <div className="label">Capital in 180+</div>
-                <div className="value">{money(data.aging['180+'].cost)}</div>
+            </div>
+
+            <div className="text-xs font-semibold tracking-wider text-muted mt-4">SELL-THROUGH BY WINDOW</div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="card text-center py-3">
+                <div className="text-xs text-muted">30 DAYS</div>
+                <div className="font-bold text-lg">{data.st30pct.toFixed(0)}%</div>
+                <div className="text-xs text-muted">{data.sellThrough30} sold</div>
+              </div>
+              <div className="card text-center py-3">
+                <div className="text-xs text-muted">60 DAYS</div>
+                <div className="font-bold text-lg">{data.st60pct.toFixed(0)}%</div>
+                <div className="text-xs text-muted">{data.sellThrough60} sold</div>
+              </div>
+              <div className="card text-center py-3">
+                <div className="text-xs text-muted">90 DAYS</div>
+                <div className="font-bold text-lg">{data.st90pct.toFixed(0)}%</div>
+                <div className="text-xs text-muted">{data.sellThrough90} sold</div>
               </div>
             </div>
 

@@ -12,7 +12,7 @@ export default function InventoryPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [showSale, setShowSale] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ItemStats | null>(null);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState('In Stock');
   const [search, setSearch] = useState('');
 
   // Add form

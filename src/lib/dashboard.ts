@@ -85,11 +85,28 @@ export async function getDashboardData() {
     if (soldAt >= startOfWeek) weekProfit += profit;
   }
 
+  // Median days to sell (for items that have sold)
+  const daysToSell: number[] = [];
+  for (const item of items || []) {
+    if (Number(item.qty_sold) > 0 && item.date_in) {
+      // Use the most recent sale date for this item if available, otherwise approximate
+      const itemSales = (sales || []).filter((s) => s.item_id === item.id);
+      if (itemSales.length > 0) {
+        const firstSale = new Date(Math.min(...itemSales.map((s) => new Date(s.sold_at).getTime())));
+        const days = Math.floor((firstSale.getTime() - new Date(item.date_in).getTime()) / 86400000);
+        if (days >= 0) daysToSell.push(days);
+      }
+    }
+  }
+  daysToSell.sort((a, b) => a - b);
+  const medianDays = daysToSell.length
+    ? daysToSell[Math.floor(daysToSell.length / 2)]
+    : 0;
+
   const sellThrough = unitsRemaining + unitsSold > 0
     ? (unitsSold / (unitsRemaining + unitsSold)) * 100
     : 0;
 
-  // 30/60/90 day sell-through (units sold in period / units that existed)
   const daysAgo = (n: number) => {
     const d = new Date();
     d.setDate(d.getDate() - n);
@@ -99,6 +116,13 @@ export async function getDashboardData() {
   const soldIn = (n: number) =>
     (sales || []).filter((s) => new Date(s.sold_at) >= daysAgo(n)).reduce((sum, s) => sum + Number(s.qty || 0), 0);
 
+  // Approximate window sell-through: units sold in window / (units remaining + units sold in window)
+  const windowST = (n: number) => {
+    const sold = soldIn(n);
+    const denom = unitsRemaining + sold;
+    return denom > 0 ? (sold / denom) * 100 : 0;
+  };
+
   return {
     realizedProfit,
     ytdProfit,
@@ -107,6 +131,7 @@ export async function getDashboardData() {
     capitalTiedUp,
     netPosition: realizedProfit - capitalTiedUp,
     sellThrough,
+    medianDays,
     unitsRemaining,
     unitsSold,
     aging,
@@ -114,5 +139,8 @@ export async function getDashboardData() {
     sellThrough30: soldIn(30),
     sellThrough60: soldIn(60),
     sellThrough90: soldIn(90),
+    st30pct: windowST(30),
+    st60pct: windowST(60),
+    st90pct: windowST(90),
   };
 }
