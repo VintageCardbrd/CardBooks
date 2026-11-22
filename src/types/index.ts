@@ -3,7 +3,7 @@
 // ============================================================
 
 export type Category = 'Card' | 'Wax' | 'Bulk Lot' | 'Other';
-export type Platform = 'eBay' | 'Whatnot' | 'FB Marketplace' | 'Other';
+export type Platform = 'eBay' | 'Whatnot' | 'FB Marketplace' | 'Cash' | 'Card Show' | 'Other';
 export type ItemStatus = 'In Stock' | 'Listed' | 'Partial' | 'Sold Out';
 export type Envelope = 'inventory' | 'ops' | 'pay' | 'debt';
 

@@ -109,6 +109,21 @@ export default function InventoryPage() {
     return matchFilter && matchSearch;
   });
 
+  // Sort by year (oldest first), items without a year go to the end alphabetically
+  function extractYear(name: string): number | null {
+    const match = name.match(/\b(19|20)\d{2}\b/);
+    return match ? parseInt(match[0]) : null;
+  }
+
+  const sorted = [...filtered].sort((a, b) => {
+    const yearA = extractYear(a.name);
+    const yearB = extractYear(b.name);
+    if (yearA !== null && yearB !== null) return yearA - yearB;
+    if (yearA !== null) return -1;
+    if (yearB !== null) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div className="min-h-screen pb-24">
       <header className="bg-ink text-white px-4 py-4">
@@ -138,7 +153,7 @@ export default function InventoryPage() {
           <div className="card text-center py-12 text-muted text-sm">No items yet. Tap + Add to create one.</div>
         ) : (
           <div className="space-y-2">
-            {filtered.map((it) => (
+            {sorted.map((it) => (
               <Link key={it.id} href={`/inventory/${it.id}`} className="card block hover:bg-paper/50 transition">
                 <div className="flex justify-between items-start">
                   <div>
@@ -212,7 +227,7 @@ export default function InventoryPage() {
 
             <label className="label">Platform</label>
             <select className="input mb-4" value={platform} onChange={(e) => setPlatform(e.target.value)}>
-              <option>eBay</option><option>Whatnot</option><option>FB Marketplace</option><option>Other</option>
+              <option>eBay</option><option>Whatnot</option><option>FB Marketplace</option><option>Cash</option><option>Card Show</option><option>Other</option>
             </select>
 
             <button className="btn mb-2" onClick={handleSale} disabled={savingSale}>{savingSale ? 'Saving...' : 'Record Sale'}</button>

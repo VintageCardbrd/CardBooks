@@ -218,6 +218,8 @@ export default function ItemDetailPage() {
                 <option>eBay</option>
                 <option>Whatnot</option>
                 <option>FB Marketplace</option>
+                <option>Cash</option>
+                <option>Card Show</option>
                 <option>Other</option>
               </select>
             </div>
