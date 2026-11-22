@@ -53,3 +53,8 @@ export async function getNextItemId(): Promise<string> {
   const num = parseInt(match[2], 10) + 1;
   return prefix + String(num).padStart(4, '0');
 }
+
+export async function updateItemName(id: string, name: string) {
+  const { error } = await supabase.from('items').update({ name }).eq('id', id);
+  if (error) throw error;
+}

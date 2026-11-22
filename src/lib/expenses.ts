@@ -33,7 +33,10 @@ export async function addExpense(expense: {
   return data;
 }
 
-export async function getBudgetBooks() {
+export async function deleteExpense(id: string) {
+  const { error } = await supabase.from('expenses').delete().eq('id', id);
+  if (error) throw error;
+}
   const { data, error } = await supabase
     .from('budget_books')
     .select('*')

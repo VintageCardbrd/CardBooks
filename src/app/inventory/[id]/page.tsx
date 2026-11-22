@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { logSale } from '@/lib/sales';
+import { updateItemName } from '@/lib/items';
 import { getBins, moveToBin } from '@/lib/bins';
 import LabelPreview from '@/components/LabelPreview';
 import type { ItemStats } from '@/types';
@@ -36,7 +37,8 @@ export default function ItemDetailPage() {
   const [selectedBin, setSelectedBin] = useState('');
   const [newBin, setNewBin] = useState('WNBX1');
   const [binQty, setBinQty] = useState('1');
-  const [showLabel, setShowLabel] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [showEditName, setShowEditName] = useState(false);
 
   const [saving, setSaving] = useState(false);
 
@@ -130,7 +132,18 @@ export default function ItemDetailPage() {
     setSaving(false);
   }
 
-  async function handleMoveToBin() {
+  async function handleSaveName() {
+    if (!editName.trim() || !item) return;
+    setSaving(true);
+    try {
+      await updateItemName(item.id, editName.trim());
+      setShowEditName(false);
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Failed');
+    }
+    setSaving(false);
+  }
     if (!item) return;
     const binId = selectedBin || newBin.trim();
     if (!binId) return alert('Choose or enter a bin');
@@ -179,6 +192,7 @@ export default function ItemDetailPage() {
             'bg-blue-100 text-blue-800'
           }`}>{item.status}</span>
           <span className="text-muted">{item.category}</span>
+          <button className="text-xs text-muted underline ml-auto" onClick={() => { setEditName(item.name); setShowEditName(true); }}>Edit name</button>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
@@ -301,6 +315,19 @@ export default function ItemDetailPage() {
           <button className="text-sm text-muted underline" onClick={() => router.back()}>Close</button>
         </div>
       </div>
+
+      {showEditName && (
+        <div className="fixed inset-0 bg-black/50 z-30 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 space-y-3">
+            <div className="font-bold">Edit name</div>
+            <input className="input" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            <div className="flex gap-2">
+              <button className="btn flex-1" onClick={handleSaveName} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+              <button className="btn-ghost flex-1" onClick={() => setShowEditName(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showLabel && item && (
         <LabelPreview

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook } from '@/lib/expenses';
+import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense } from '@/lib/expenses';
 
 const CATEGORIES = [
   'Card Purchase',
@@ -75,6 +75,16 @@ export default function ExpensesPage() {
     }
   }
 
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this expense?')) return;
+    try {
+      await deleteExpense(id);
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Failed');
+    }
+  }
+
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
   return (
@@ -133,7 +143,10 @@ export default function ExpensesPage() {
                         </div>
                         {e.notes && <div className="text-xs mt-1">{e.notes}</div>}
                       </div>
-                      <div className="font-bold">${Number(e.amount).toFixed(2)}</div>
+                      <div className="text-right">
+                        <div className="font-bold">${Number(e.amount).toFixed(2)}</div>
+                        <button className="text-red-600 text-xs mt-1" onClick={() => handleDelete(e.id)}>Delete</button>
+                      </div>
                     </div>
                   </div>
                 ))}
