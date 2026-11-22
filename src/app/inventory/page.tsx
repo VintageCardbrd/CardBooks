@@ -151,6 +151,7 @@ export default function InventoryPage() {
                         'bg-blue-100 text-blue-800'
                       }`}>{it.status}</span>
                       {it.qty_remaining}/{it.qty_bought} left · {it.id}
+                      {it.lot_id && <span className="ml-1 text-ink font-medium">· {it.lot_id}</span>}
                     </div>
                   </div>
                   <div className="text-right">

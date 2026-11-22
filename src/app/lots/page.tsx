@@ -84,7 +84,7 @@ export default function LotsPage() {
         ) : (
           <div className="space-y-2">
             {lots.map((l) => (
-              <div key={l.id} className="card">
+              <Link key={l.id} href={`/lots/${l.id}`} className="block card">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-semibold text-sm">{l.id}</div>
@@ -101,7 +101,7 @@ export default function LotsPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
