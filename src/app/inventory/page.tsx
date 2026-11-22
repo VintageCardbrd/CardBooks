@@ -143,15 +143,19 @@ export default function InventoryPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-semibold">{it.name}</div>
-                    <div className="text-xs text-muted mt-0.5">
-                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold mr-1 ${
+                    <div className="text-xs text-muted mt-0.5 flex items-center gap-1 flex-wrap">
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
                         it.status === 'Sold Out' ? 'bg-green-100 text-green-800' :
                         it.status === 'Partial' ? 'bg-purple-100 text-purple-800' :
                         it.status === 'Listed' ? 'bg-amber-100 text-amber-800' :
                         'bg-blue-100 text-blue-800'
                       }`}>{it.status}</span>
-                      {it.qty_remaining}/{it.qty_bought} left · {it.id}
-                      {it.lot_id && <span className="ml-1 text-ink font-medium">· {it.lot_id}</span>}
+                      <span>{it.qty_remaining}/{it.qty_bought} left · {it.id}</span>
+                      {it.lot_id && (
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-ink text-white">
+                          {it.lot_id}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
