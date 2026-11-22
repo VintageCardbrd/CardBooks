@@ -144,6 +144,8 @@ export default function ItemDetailPage() {
     }
     setSaving(false);
   }
+
+  async function handleMoveToBin() {
     if (!item) return;
     const binId = selectedBin || newBin.trim();
     if (!binId) return alert('Choose or enter a bin');

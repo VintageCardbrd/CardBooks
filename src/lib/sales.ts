@@ -55,6 +55,8 @@ export async function deleteSale(id: string) {
   const { error } = await supabase.from('sales').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function getRecentSales(limit = 50) {
   const { data, error } = await supabase
     .from('sales')
     .select('*, items(name)')
