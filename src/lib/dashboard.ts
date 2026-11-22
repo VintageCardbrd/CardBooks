@@ -12,7 +12,7 @@ export async function getDashboardData() {
 
   const { data: sales, error: salesErr } = await supabase
     .from('sales')
-    .select('sale_total, avg_cost_at_sale, qty, platform, sold_at, payout')
+    .select('item_id, sale_total, avg_cost_at_sale, qty, platform, sold_at, payout')
     .order('sold_at', { ascending: false });
 
   if (salesErr) {
