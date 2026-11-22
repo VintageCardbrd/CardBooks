@@ -32,3 +32,31 @@ export async function addMileageTrip(trip: {
   if (error) throw error;
   return data;
 }
+
+export async function getPresets() {
+  const { data, error } = await supabase
+    .from('mileage_presets')
+    .select('*')
+    .order('category')
+    .order('destination');
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function addPreset(preset: {
+  category: string;
+  destination: string;
+  miles: number;
+  purpose?: string;
+}) {
+  const { data, error } = await supabase
+    .from('mileage_presets')
+    .insert([preset])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
