@@ -47,11 +47,6 @@ export default function MonthlyPage() {
     const totalCogs = salesList.reduce((s, x) => s + Number(x.avg_cost_at_sale || 0) * Number(x.qty || 0), 0);
     const unitsBought = purchList.reduce((s, p) => s + Number(p.qty_bought || 0), 0);
     const unitsSold = salesList.reduce((s, x) => s + Number(x.qty || 0), 0);
-    const boughtIds = new Set(purchList.map((p) => p.id));
-    const soldFromThisMonth = salesList
-      .filter((s: any) => boughtIds.has(s.items?.id))
-      .reduce((sum, s) => sum + Number(s.qty || 0), 0);
-    const sellThrough = unitsBought > 0 ? (soldFromThisMonth / unitsBought) * 100 : 0;
 
     const salesWithDays = salesList.map((s: any) => {
       const dateIn = s.items?.date_in ? new Date(s.items.date_in) : null;
@@ -59,6 +54,19 @@ export default function MonthlyPage() {
       const days = dateIn ? Math.floor((soldAt.getTime() - dateIn.getTime()) / 86400000) : null;
       return { ...s, days };
     });
+
+    const daysList = salesWithDays.filter((s: any) => s.days !== null).map((s: any) => s.days as number);
+    const avgDaysSold = daysList.length > 0 ? Math.round(daysList.reduce((a, b) => a + b, 0) / daysList.length) : 0;
+
+    const now = new Date();
+    const { data: remaining } = await supabase
+      .from('item_stats')
+      .select('date_in, qty_remaining')
+      .gt('qty_remaining', 0);
+    const ageDays = (remaining || [])
+      .filter((r: any) => r.date_in)
+      .map((r: any) => Math.floor((now.getTime() - new Date(r.date_in).getTime()) / 86400000));
+    const avgAgeInventory = ageDays.length > 0 ? Math.round(ageDays.reduce((a: number, b: number) => a + b, 0) / ageDays.length) : 0;
 
     setData({
       purchases: purchList,
@@ -111,8 +119,12 @@ export default function MonthlyPage() {
                 <div className="font-bold">{data.unitsSold}</div>
               </div>
               <div className="border border-line rounded p-2">
-                <div className="text-xs text-muted">Sell-through</div>
-                <div className="font-bold">{data.sellThrough.toFixed(0)}%</div>
+                <div className="text-xs text-muted">Avg days held</div>
+                <div className="font-bold">{data.avgDaysSold}d</div>
+              </div>
+              <div className="border border-line rounded p-2">
+                <div className="text-xs text-muted">Avg age in stock</div>
+                <div className="font-bold">{data.avgAgeInventory}d</div>
               </div>
               <div className="border border-line rounded p-2">
                 <div className="text-xs text-muted">Profit</div>
