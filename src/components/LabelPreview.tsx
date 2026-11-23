@@ -102,6 +102,22 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     setReady(true);
   }
 
+  async function printViaSystem() {
+    if (!canvasRef.current) return;
+    const dataUrl = canvasRef.current.toDataURL('image/png');
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(`
+      <html><head><title>Label</title>
+      <style>body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}
+      img{width:1.5in;height:auto;}
+      @media print { body { margin: 0; } img { width: 1.5in; } }</style>
+      </head><body><img src="${dataUrl}" /></body></html>
+    `);
+    w.document.close();
+    w.onload = () => { w.print(); };
+  }
+
   async function downloadLabel() {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -206,11 +222,14 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
           {printStatus && (
             <div className="text-xs text-center text-muted">{printStatus}</div>
           )}
+          <button className="btn" onClick={printViaSystem} disabled={!ready}>
+            Print via system
+          </button>
           <button className="btn-ghost" onClick={downloadLabel} disabled={!ready}>
             Share / Save label
           </button>
           <div className="text-xs text-muted text-center">
-            Direct print requires Chrome (not a saved app). On Mac, open the site in Chrome. Download always works for the NIIMBOT app.
+            System print uses the macOS printer. Direct print requires Chrome.
           </div>
           <button className="btn-ghost" onClick={onClose}>Close</button>
         </div>
