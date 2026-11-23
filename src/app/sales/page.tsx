@@ -35,6 +35,7 @@ export default function SalesPage() {
   const [batchPlatform, setBatchPlatform] = useState('eBay');
   const [batchPayout, setBatchPayout] = useState('');
   const [showPicker, setShowPicker] = useState(false);
+  const [showScan, setShowScan] = useState(false);
   const [pickerSearch, setPickerSearch] = useState('');
   const [inStock, setInStock] = useState<ItemStats[]>([]);
   const [savingBatch, setSavingBatch] = useState(false);
