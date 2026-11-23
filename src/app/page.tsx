@@ -19,7 +19,7 @@ export default function HomePage() {
     setLoading(true);
     const [d, b] = await Promise.all([getDashboardData(), getBudgetBooks()]);
     setData(d);
-    setBooks(b.filter((x: any) => !x.key.startsWith('alloc_')));
+    setBooks(b.filter((x: any) => !x.key.startsWith('alloc_') && !x.key.includes('opening')));
     setLoading(false);
   }
 
