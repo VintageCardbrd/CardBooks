@@ -111,9 +111,9 @@ export default function HomePage() {
             {books.length > 0 && (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  {books.filter((b) => b.key === 'checking' || b.key === 'credit_card').map((b) => (
+                  {books.filter((b) => b.key === 'checking' || b.key === 'card_owed').map((b) => (
                     <div key={b.key} className="card text-center py-3">
-                      <div className="text-xs text-muted capitalize">{b.key.replace(/_/g, ' ')}</div>
+                      <div className="text-xs text-muted capitalize">{b.key === 'card_owed' ? 'Credit Card' : b.key.replace(/_/g, ' ')}</div>
                       <div className="font-bold">{money(Number(b.value))}</div>
                     </div>
                   ))}
@@ -121,7 +121,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-3 gap-2">
                   {books.filter((b) => b.key === 'inventory' || b.key === 'operations' || b.key === 'paycheck').map((b) => (
                     <div key={b.key} className="card text-center py-3">
-                      <div className="text-xs text-muted capitalize">{b.key.replace(/_/g, ' ')}</div>
+                      <div className="text-xs text-muted capitalize">{b.key === 'card_owed' ? 'Credit Card' : b.key.replace(/_/g, ' ')}</div>
                       <div className="font-bold">{money(Number(b.value))}</div>
                     </div>
                   ))}
