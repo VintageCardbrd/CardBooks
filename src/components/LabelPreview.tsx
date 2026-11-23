@@ -111,13 +111,12 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
       <html><head><title>Label</title>
       <style>
         @page { size: 12mm 40mm; margin: 0; }
-        body { margin: 0; padding: 0; }
-        img { width: 12mm; height: 40mm; display: block; }
+        html, body { margin: 0; padding: 0; width: 12mm; height: 40mm; overflow: hidden; }
+        img { width: 12mm; height: 40mm; display: block; page-break-after: avoid; page-break-inside: avoid; }
       </style>
-      </head><body><img src="${dataUrl}" /></body></html>
+      </head><body><img src="${dataUrl}" onload="setTimeout(()=>window.print(),100)" /></body></html>
     `);
     w.document.close();
-    w.onload = () => { w.print(); };
   }
 
   async function downloadLabel() {
