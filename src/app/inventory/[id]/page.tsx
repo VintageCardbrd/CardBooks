@@ -154,6 +154,7 @@ export default function ItemDetailPage() {
   }
 
   function openEdit() {
+    if (!item) return;
     setEditForm({
       name: item.name,
       category: item.category || 'Card',
