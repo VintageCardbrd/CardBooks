@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getDashboardData } from '@/lib/dashboard';
+import { getBudgetBooks } from '@/lib/expenses';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'profit' | 'health'>('profit');
   const [data, setData] = useState<any>(null);
+  const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,8 +17,9 @@ export default function HomePage() {
 
   async function load() {
     setLoading(true);
-    const d = await getDashboardData();
+    const [d, b] = await Promise.all([getDashboardData(), getBudgetBooks()]);
     setData(d);
+    setBooks(b.filter((x: any) => !x.key.startsWith('alloc_')));
     setLoading(false);
   }
 
@@ -104,6 +107,17 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+
+            {books.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {books.map((b) => (
+                  <div key={b.key} className="card text-center py-3">
+                    <div className="text-xs text-muted capitalize">{b.key.replace(/_/g, ' ')}</div>
+                    <div className="font-bold">{money(Number(b.value))}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
