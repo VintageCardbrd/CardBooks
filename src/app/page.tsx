@@ -84,26 +84,67 @@ export default function HomePage() {
                     {money(pnl.netProfit)}
                   </div>
                 </div>
-                {pnl.weekly?.length > 0 && (
-                  <div className="card">
-                    <div className="text-sm font-semibold mb-3">WEEK OVER WEEK</div>
-                    <div className="flex items-end gap-1 h-24">
-                      {pnl.weekly.slice(-8).map((w: any) => {
-                        const max = Math.max(...pnl.weekly.slice(-8).map((x: any) => Math.max(x.revenue, x.overhead + x.cardPurchases)));
-                        return (
-                          <div key={w.week} className="flex-1 flex items-end justify-center gap-px h-full">
-                            <div className="w-1.5 bg-blue-500 rounded-t" style={{ height: `${(w.revenue / max) * 100}%` }} />
-                            <div className="w-1.5 bg-yellow-400 rounded-t" style={{ height: `${((w.cardPurchases || 0) / max) * 100}%` }} />
-                          </div>
-                        );
-                      })}
+                {pnl.weekly?.length > 0 && (() => {
+                  const weeks = pnl.weekly.slice(-8);
+                  const maxVal = Math.max(...weeks.map((w: any) => Math.max(w.revenue, w.overhead + w.cardPurchases, Math.abs(w.profit))), 1);
+                  return (
+                    <div className="card">
+                      <div className="text-sm font-semibold mb-3">WEEK OVER WEEK</div>
+                      <div className="relative h-52">
+                        <div className="absolute left-0 top-0 bottom-6 w-10 flex flex-col justify-between text-[10px] text-muted">
+                          <div>{money(maxVal)}</div>
+                          <div>{money(maxVal * 0.5)}</div>
+                          <div>$0</div>
+                        </div>
+                        <div className="absolute left-12 right-0 top-0 bottom-6 flex items-end gap-2">
+                          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <polyline
+                              fill="none"
+                              stroke="#22c55e"
+                              strokeWidth="1.5"
+                              vectorEffect="non-scaling-stroke"
+                              points={weeks.map((w: any, i: number) => {
+                                const x = ((i + 0.5) / weeks.length) * 100;
+                                const y = 100 - (Math.max(0, w.profit) / maxVal) * 100;
+                                return `${x},${y}`;
+                              }).join(' ')}
+                            />
+                          </svg>
+                          {weeks.map((w: any) => {
+                            const revH = Math.max(2, (w.revenue / maxVal) * 100);
+                            const cardH = w.cardPurchases > 0 ? Math.max(2, (w.cardPurchases / maxVal) * 100) : 0;
+                            const overH = w.overhead > 0 ? Math.max(2, (w.overhead / maxVal) * 100) : 0;
+                            const profitPct = Math.max(0, w.profit) / maxVal;
+                            return (
+                              <div key={w.week} className="flex-1 relative h-full flex items-end justify-center gap-0.5">
+                                <div className="w-2.5 bg-blue-500 rounded-t" style={{ height: `${revH}%` }} />
+                                {cardH > 0 && <div className="w-2.5 bg-yellow-400 rounded-t" style={{ height: `${cardH}%` }} />}
+                                {overH > 0 && <div className="w-2.5 bg-gray-400 rounded-t" style={{ height: `${overH}%` }} />}
+                                <div
+                                  className="absolute w-2 h-2 bg-green-500 rounded-full border border-white"
+                                  style={{ bottom: `${profitPct * 100}%`, left: '50%', transform: 'translateX(-50%)' }}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="absolute left-12 right-0 bottom-0 h-5 flex gap-2">
+                          {weeks.map((w: any) => (
+                            <div key={w.week} className="flex-1 text-center text-[9px] text-muted">
+                              {new Date(w.week).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex gap-3 text-xs mt-2 flex-wrap justify-center">
+                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-blue-500 rounded-sm" /> Revenue</span>
+                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" /> Profit</span>
+                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-gray-400 rounded-sm" /> Overhead</span>
+                        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-yellow-400 rounded-sm" /> Card purchases</span>
+                      </div>
                     </div>
-                    <div className="flex gap-3 text-xs mt-2 text-muted">
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-sm" /> Revenue</span>
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-sm" /> Card purchases</span>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </>
             )}
             <div className="grid grid-cols-2 gap-3">
