@@ -85,38 +85,59 @@ export default function PnLPage() {
             {weeks.length > 0 && (
               <div className="card">
                 <div className="text-sm font-semibold mb-3">WEEK OVER WEEK</div>
-                <div className="flex items-end gap-1 h-40 overflow-x-auto pb-2">
-                  {weeks.slice(-8).map((w: any) => {
-                    const totalExp = w.overhead + w.cardPurchases;
-                    const revH = (w.revenue / maxVal) * 100;
-                    const expH = (totalExp / maxVal) * 100;
-                    const profitY = 100 - (Math.max(0, w.profit) / maxVal) * 100;
-                    const isSelected = selectedWeek?.week === w.week;
-                    return (
-                      <button
-                        key={w.week}
-                        onClick={() => setSelectedWeek(w)}
-                        className={`flex-1 min-w-[36px] flex flex-col items-center ${isSelected ? 'opacity-100' : 'opacity-70'}`}
-                      >
-                        <div className="relative w-full h-32 flex items-end justify-center gap-0.5">
-                          <div className="w-2 bg-blue-500 rounded-t" style={{ height: `${revH}%` }} />
-                          <div className="w-2 bg-yellow-400 rounded-t" style={{ height: `${(w.cardPurchases / maxVal) * 100}%` }} />
-                          <div className="w-2 bg-gray-400 rounded-t" style={{ height: `${(w.overhead / maxVal) * 100}%` }} />
-                          <div
-                            className="absolute left-0 right-0 h-0.5 bg-green-500"
-                            style={{ bottom: `${100 - profitY}%` }}
-                          />
-                        </div>
-                        <div className="text-[9px] text-muted mt-1">{new Date(w.week).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</div>
-                      </button>
-                    );
-                  })}
+                <div className="relative h-52">
+                  {/* Grid */}
+                  <div className="absolute inset-x-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-muted pointer-events-none pl-1">
+                    <div className="border-b border-line/40">{money(maxVal)}</div>
+                    <div className="border-b border-line/40">{money(maxVal * 0.5)}</div>
+                    <div className="border-b border-line/40">$0</div>
+                  </div>
+                  {/* Bars + line */}
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    {/* Profit line */}
+                    <polyline
+                      fill="none"
+                      stroke="#22c55e"
+                      strokeWidth="0.8"
+                      points={weeks.slice(-8).map((w: any, i: number) => {
+                        const x = ((i + 0.5) / Math.min(weeks.length, 8)) * 100;
+                        const y = 100 - (Math.max(0, w.profit) / maxVal) * 85;
+                        return `${x},${y}`;
+                      }).join(' ')}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-end gap-1 px-2 pb-6">
+                    {weeks.slice(-8).map((w: any) => {
+                      const isSelected = selectedWeek?.week === w.week;
+                      const revH = (w.revenue / maxVal) * 85;
+                      const cardH = (w.cardPurchases / maxVal) * 85;
+                      const overH = (w.overhead / maxVal) * 85;
+                      return (
+                        <button
+                          key={w.week}
+                          onClick={() => setSelectedWeek(w)}
+                          className={`flex-1 flex items-end justify-center gap-px h-full ${isSelected ? 'opacity-100' : 'opacity-80'}`}
+                        >
+                          <div className="w-1.5 bg-blue-500 rounded-t" style={{ height: `${revH}%` }} />
+                          <div className="w-1.5 bg-yellow-400 rounded-t" style={{ height: `${cardH}%` }} />
+                          <div className="w-1.5 bg-gray-400 rounded-t" style={{ height: `${overH}%` }} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="absolute bottom-0 left-2 right-2 flex gap-1">
+                    {weeks.slice(-8).map((w: any) => (
+                      <div key={w.week} className="flex-1 text-center text-[9px] text-muted">
+                        {new Date(w.week).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex gap-3 text-xs mt-2">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-sm" /> Revenue</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-green-500" /> Profit</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-gray-400 rounded-sm" /> Overhead</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-sm" /> Card purchases</span>
+                <div className="flex gap-3 text-xs mt-2 flex-wrap">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-blue-500 rounded-sm" /> Revenue</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500" /> Profit</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-gray-400 rounded-sm" /> Overhead</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-yellow-400 rounded-sm" /> Card purchases</span>
                 </div>
               </div>
             )}
