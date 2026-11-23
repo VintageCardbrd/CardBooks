@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-export async function getMileageTrips(limit = 100) {
+export async function getMileageTrips(limit = 2000) {
   const { data, error } = await supabase
     .from('mileage_trips')
     .select('*')
