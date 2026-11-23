@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getDashboardData } from '@/lib/dashboard';
 import { getBudgetBooks } from '@/lib/expenses';
+import { getPnL } from '@/lib/pnl';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'profit' | 'health'>('profit');
   const [data, setData] = useState<any>(null);
   const [books, setBooks] = useState<any[]>([]);
+  const [pnl, setPnl] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,9 +19,16 @@ export default function HomePage() {
 
   async function load() {
     setLoading(true);
-    const [d, b] = await Promise.all([getDashboardData(), getBudgetBooks()]);
+    const start = new Date();
+    start.setMonth(start.getMonth() - 3);
+    const [d, b, p] = await Promise.all([
+      getDashboardData(),
+      getBudgetBooks(),
+      getPnL(start.toISOString().split('T')[0], new Date().toISOString().split('T')[0]),
+    ]);
     setData(d);
     setBooks(b.filter((x: any) => !x.key.startsWith('alloc_') && !x.key.includes('opening')));
+    setPnl(p);
     setLoading(false);
   }
 
@@ -67,6 +76,36 @@ export default function HomePage() {
           <div className="card text-center py-12 text-muted text-sm">Could not load dashboard.</div>
         ) : activeTab === 'profit' ? (
           <div className="space-y-4">
+            {pnl && (
+              <>
+                <div className="card text-center py-3">
+                  <div className="text-xs text-muted">OVERALL POSITION</div>
+                  <div className={`text-2xl font-bold ${pnl.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    {money(pnl.netProfit)}
+                  </div>
+                </div>
+                {pnl.weekly?.length > 0 && (
+                  <div className="card">
+                    <div className="text-sm font-semibold mb-3">WEEK OVER WEEK</div>
+                    <div className="flex items-end gap-1 h-24">
+                      {pnl.weekly.slice(-8).map((w: any) => {
+                        const max = Math.max(...pnl.weekly.slice(-8).map((x: any) => Math.max(x.revenue, x.overhead + x.cardPurchases)));
+                        return (
+                          <div key={w.week} className="flex-1 flex items-end justify-center gap-px h-full">
+                            <div className="w-1.5 bg-blue-500 rounded-t" style={{ height: `${(w.revenue / max) * 100}%` }} />
+                            <div className="w-1.5 bg-yellow-400 rounded-t" style={{ height: `${((w.cardPurchases || 0) / max) * 100}%` }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-3 text-xs mt-2 text-muted">
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-sm" /> Revenue</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-sm" /> Card purchases</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="kpi">
                 <div className="label">Realized Profit</div>

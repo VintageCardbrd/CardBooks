@@ -76,16 +76,38 @@ export async function getFinancials(startDate: string, endDate: string) {
 // Schedule C style mapping
 const TAX_MAP: Record<string, string> = {
   Advertising: 'Advertising',
-  Meals: 'Meals (50% deductible)',
-  Mileage: 'Car and truck expenses',
+  Meals: 'Meals (50% limit)',
+  Mileage: 'Vehicle',
   Supplies: 'Supplies',
-  Postage: 'Postage',
-  Shipping: 'Postage',
-  Grading: 'Other expenses',
-  Fees: 'Other expenses',
-  Software: 'Other expenses',
-  Other: 'Other expenses',
+  Postage: 'Office expenses',
+  Shipping: 'Office expenses',
+  Grading: 'Other miscellaneous expenses',
+  Fees: 'Commissions',
+  Software: 'Office expenses',
+  'Startup costs': 'Startup costs',
+  'Home office': 'Home office',
+  'Legal and professional fees': 'Legal and professional fees',
+  'Office expenses': 'Office expenses',
+  Interest: 'Credit card, loan, and other interest',
+  Commissions: 'Commissions',
+  Other: 'Other miscellaneous expenses',
 };
+
+const SCHEDULE_C_LINES = [
+  'Startup costs',
+  'Vehicle',
+  'Home office',
+  'Assets',
+  'Supplies',
+  'Advertising',
+  'Meals (50% limit)',
+  'Legal and professional fees',
+  'Office expenses',
+  'Credit card, loan, and other interest',
+  'Commissions',
+  'Inventory',
+  'Other miscellaneous expenses',
+];
 
 export async function getTaxReport(year: number) {
   const start = `${year}-01-01`;
@@ -93,10 +115,13 @@ export async function getTaxReport(year: number) {
   const fin = await getFinancials(start, end);
 
   const lines: Record<string, number> = {};
+  for (const line of SCHEDULE_C_LINES) lines[line] = 0;
   for (const c of fin.byCategory) {
-    const line = TAX_MAP[c.category] || 'Other expenses';
+    const line = TAX_MAP[c.category] || 'Other miscellaneous expenses';
     lines[line] = (lines[line] || 0) + c.amount;
   }
+  // Inventory is COGS, not an expense
+  lines['Inventory'] = fin.cogs;
 
   return {
     year,

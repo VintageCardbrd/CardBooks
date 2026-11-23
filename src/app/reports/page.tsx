@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getPnL } from '@/lib/pnl';
 import { getRecentSales } from '@/lib/sales';
+import { getTaxReport } from '@/lib/financials';
 
 export default function ReportsPage() {
   const [start, setStart] = useState(() => {
@@ -12,7 +13,7 @@ export default function ReportsPage() {
     return d.toISOString().split('T')[0];
   });
   const [end, setEnd] = useState(() => new Date().toISOString().split('T')[0]);
-  const [type, setType] = useState<'sales' | 'pnl'>('sales');
+  const [type, setType] = useState<'sales' | 'pnl' | 'tax'>('sales');
   const [generating, setGenerating] = useState(false);
 
   async function exportCSV() {
@@ -58,6 +59,24 @@ export default function ReportsPage() {
           ...d.byCategory.map((c: any) => `${c.category},${c.amount.toFixed(2)}`),
         ];
         downloadCSV(lines.join('\n'), `pnl-${start}-to-${end}.csv`);
+      } else if (type === 'tax') {
+        const year = new Date(start).getFullYear();
+        const t = await getTaxReport(year);
+        const lines = [
+          `Schedule C Summary - ${year}`,
+          '',
+          'Line,Amount',
+          `Gross receipts or sales,${t.grossReceipts.toFixed(2)}`,
+          `Cost of goods sold,${t.cogs.toFixed(2)}`,
+          `Gross profit,${t.grossProfit.toFixed(2)}`,
+          '',
+          'Expenses',
+          ...t.expenses.map((e: any) => `${e.line},${e.amount.toFixed(2)}`),
+          `Total expenses,${t.totalExpenses.toFixed(2)}`,
+          '',
+          `Net profit,${t.netProfit.toFixed(2)}`,
+        ];
+        downloadCSV(lines.join('\n'), `tax-report-${year}.csv`);
       }
     } catch (e: any) {
       alert(e.message || 'Failed');
@@ -91,6 +110,7 @@ export default function ReportsPage() {
             <select className="input" value={type} onChange={(e) => setType(e.target.value as any)}>
               <option value="sales">Sales Log</option>
               <option value="pnl">Profit & Loss</option>
+              <option value="tax">Tax Report (Schedule C)</option>
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">

@@ -15,6 +15,12 @@ const CATEGORIES = [
   'Mileage',
   'Fees',
   'Software',
+  'Startup costs',
+  'Home office',
+  'Legal and professional fees',
+  'Office expenses',
+  'Interest',
+  'Commissions',
   'Other',
 ];
 
