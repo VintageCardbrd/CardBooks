@@ -13,25 +13,35 @@ export default function PnLPage() {
   const [end, setEnd] = useState(() => new Date().toISOString().split('T')[0]);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState<any>(null);
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   async function load() {
     setLoading(true);
     const d = await getPnL(start, end);
     setData(d);
+    if (d?.weekly?.length) setSelectedWeek(d.weekly[d.weekly.length - 1]);
     setLoading(false);
   }
 
   function money(n: number) {
-    return `$${Math.round(n).toLocaleString()}`;
+    const abs = Math.abs(n);
+    const s = abs >= 1000 ? `$${(abs / 1000).toFixed(1)}k` : `$${abs.toFixed(0)}`;
+    return n < 0 ? `-${s}` : s;
   }
 
-  const maxVal = data?.weekly?.length
-    ? Math.max(...data.weekly.map((w: any) => Math.max(w.revenue, w.profit, w.expenses)))
+  function moneyFull(n: number) {
+    return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  const weeks = data?.weekly || [];
+  const maxVal = weeks.length
+    ? Math.max(...weeks.map((w: any) => Math.max(w.revenue, w.overhead + w.cardPurchases, Math.abs(w.profit))))
     : 1;
+
+  const thisWeek = weeks[weeks.length - 1];
+  const lastWeek = weeks[weeks.length - 2];
 
   return (
     <div className="min-h-screen pb-24">
@@ -53,80 +63,115 @@ export default function PnLPage() {
           <div className="text-center text-muted py-12">Loading...</div>
         ) : data ? (
           <div className="space-y-4">
+            {/* Overall position */}
+            <div className="card text-center py-3">
+              <div className="text-xs text-muted">OVERALL POSITION</div>
+              <div className={`text-2xl font-bold ${data.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                {moneyFull(data.netProfit)}
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="card text-center py-3">
-                <div className="text-xs text-muted">Revenue</div>
-                <div className="font-bold">{money(data.revenue)}</div>
+                <div className="text-xs text-muted">REVENUE</div>
+                <div className="font-bold">{moneyFull(data.revenue)}</div>
               </div>
               <div className="card text-center py-3">
-                <div className="text-xs text-muted">COGS</div>
-                <div className="font-bold">{money(data.cogs)}</div>
-              </div>
-              <div className="card text-center py-3">
-                <div className="text-xs text-muted">Gross Profit</div>
-                <div className={`font-bold ${data.grossProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                  {money(data.grossProfit)}
-                </div>
-              </div>
-              <div className="card text-center py-3">
-                <div className="text-xs text-muted">Expenses</div>
-                <div className="font-bold">{money(data.expenseTotal)}</div>
+                <div className="text-xs text-muted">EXPENSES</div>
+                <div className="font-bold">{moneyFull(data.expenseTotal)}</div>
               </div>
             </div>
 
-            <div className="card text-center py-4">
-              <div className="text-xs text-muted">Net Profit</div>
-              <div className={`text-2xl font-bold ${data.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                {money(data.netProfit)}
-              </div>
-              <div className="text-xs text-muted mt-1">Draws: {money(data.drawsTotal)}</div>
-            </div>
-
-            {data.weekly.length > 0 && (
+            {/* Week over week chart */}
+            {weeks.length > 0 && (
               <div className="card">
-                <div className="text-sm font-semibold mb-3">Weekly Trend</div>
-                <div className="space-y-2">
-                  {data.weekly.slice(-8).map((w: any) => (
-                    <div key={w.week}>
-                      <div className="text-xs text-muted mb-1">{w.week}</div>
-                      <div className="flex gap-1 items-end h-8">
-                        <div className="bg-blue-400 rounded-sm" style={{ width: `${(w.revenue / maxVal) * 100}%`, height: '100%' }} title={`Rev ${money(w.revenue)}`} />
-                        <div className="bg-green-500 rounded-sm" style={{ width: `${(Math.max(0, w.profit) / maxVal) * 100}%`, height: '100%' }} title={`Profit ${money(w.profit)}`} />
-                        <div className="bg-red-400 rounded-sm" style={{ width: `${(w.expenses / maxVal) * 100}%`, height: '100%' }} title={`Exp ${money(w.expenses)}`} />
-                      </div>
-                      <div className="text-xs text-muted flex gap-3 mt-0.5">
-                        <span className="text-blue-600">Rev {money(w.revenue)}</span>
-                        <span className="text-green-700">P {money(w.profit)}</span>
-                        <span className="text-red-600">E {money(w.expenses)}</span>
-                      </div>
-                    </div>
-                  ))}
+                <div className="text-sm font-semibold mb-3">WEEK OVER WEEK</div>
+                <div className="flex items-end gap-1 h-40 overflow-x-auto pb-2">
+                  {weeks.slice(-8).map((w: any) => {
+                    const totalExp = w.overhead + w.cardPurchases;
+                    const revH = (w.revenue / maxVal) * 100;
+                    const expH = (totalExp / maxVal) * 100;
+                    const profitY = 100 - (Math.max(0, w.profit) / maxVal) * 100;
+                    const isSelected = selectedWeek?.week === w.week;
+                    return (
+                      <button
+                        key={w.week}
+                        onClick={() => setSelectedWeek(w)}
+                        className={`flex-1 min-w-[36px] flex flex-col items-center ${isSelected ? 'opacity-100' : 'opacity-70'}`}
+                      >
+                        <div className="relative w-full h-32 flex items-end justify-center gap-0.5">
+                          <div className="w-2 bg-blue-500 rounded-t" style={{ height: `${revH}%` }} />
+                          <div className="w-2 bg-yellow-400 rounded-t" style={{ height: `${(w.cardPurchases / maxVal) * 100}%` }} />
+                          <div className="w-2 bg-gray-400 rounded-t" style={{ height: `${(w.overhead / maxVal) * 100}%` }} />
+                          <div
+                            className="absolute left-0 right-0 h-0.5 bg-green-500"
+                            style={{ bottom: `${100 - profitY}%` }}
+                          />
+                        </div>
+                        <div className="text-[9px] text-muted mt-1">{new Date(w.week).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</div>
+                      </button>
+                    );
+                  })}
                 </div>
-                <div className="text-xs text-muted mt-2">Blue = Revenue, Green = Profit, Red = Expenses</div>
+                <div className="flex gap-3 text-xs mt-2">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-sm" /> Revenue</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-green-500" /> Profit</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-gray-400 rounded-sm" /> Overhead</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 bg-yellow-400 rounded-sm" /> Card purchases</span>
+                </div>
               </div>
             )}
 
-            {data.byPlatform.length > 0 && (
-              <div className="card">
-                <div className="text-sm font-semibold mb-2">By Platform</div>
-                {data.byPlatform.map((p: any) => (
-                  <div key={p.platform} className="flex justify-between text-sm py-1">
-                    <span>{p.platform}</span>
-                    <span className="text-muted">{money(p.revenue)} · {money(p.profit)} profit</span>
+            {/* This week vs last */}
+            {thisWeek && (
+              <div>
+                <div className="text-xs font-semibold tracking-wider text-muted mb-+2">THIS WEEK VS LAST</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="card text-center py-2">
+                    <div className="text-xs text-muted">REVENUE</div>
+                    <div className="font-bold">{moneyFull(thisWeek.revenue)}</div>
+                    {lastWeek && (
+                      <div className={`text-xs ${thisWeek.revenue - lastWeek.revenue >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                        {thisWeek.revenue - lastWeek.revenue >= 0 ? '+' : ''}{moneyFull(thisWeek.revenue - lastWeek.revenue)}
+                      </div>
+                    )}
                   </div>
-                ))}
+                  <div className="card text-center py-2">
+                    <div className="text-xs text-muted">PROFIT</div>
+                    <div className="font-bold">{moneyFull(thisWeek.profit)}</div>
+                    {lastWeek && (
+                      <div className={`text-xs ${thisWeek.profit - lastWeek.profit >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                        {thisWeek.profit - lastWeek.profit >= 0 ? '+' : ''}{moneyFull(thisWeek.profit - lastWeek.profit)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="card text-center py-2">
+                    <div className="text-xs text-muted">EXPENSES</div>
+                    <div className="font-bold">{moneyFull(thisWeek.overhead + thisWeek.cardPurchases)}</div>
+                    {lastWeek && (
+                      <div className={`text-xs ${(thisWeek.overhead + thisWeek.cardPurchases) - (lastWeek.overhead + lastWeek.cardPurchases) >= 0 ? 'text-red-600' : 'text-green-700'}`}>
+                        {(thisWeek.overhead + thisWeek.cardPurchases) - (lastWeek.overhead + lastWeek.cardPurchases) >= 0 ? '+' : ''}
+                        {moneyFull((thisWeek.overhead + thisWeek.cardPurchases) - (lastWeek.overhead + lastWeek.cardPurchases))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
-            {data.byCategory.length > 0 && (
+            <div className="text-xs text-muted">Tap a week for its numbers.</div>
+
+            {/* Selected week detail */}
+            {selectedWeek && (
               <div className="card">
-                <div className="text-sm font-semibold mb-2">Expenses by Category</div>
-                {data.byCategory.map((c: any) => (
-                  <div key={c.category} className="flex justify-between text-sm py-1">
-                    <span>{c.category}</span>
-                    <span className="text-muted">{money(c.amount)}</span>
-                  </div>
-                ))}
+                <div className="font-semibold text-sm mb-2">
+                  Week of {new Date(selectedWeek.week).toLocaleDateString()}
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between"><span>Revenue</span><span>{moneyFull(selectedWeek.revenue)}</span></div>
+                  <div className="flex justify-between"><span>Profit after COGS</span><span>{moneyFull(selectedWeek.profit)}</span></div>
+                  <div className="flex justify-between"><span>Overhead</span><span>{moneyFull(selectedWeek.overhead)}</span></div>
+                  <div className="flex justify-between"><span>Card purchases</span><span>{moneyFull(selectedWeek.cardPurchases)}</span></div>
+                </div>
               </div>
             )}
           </div>

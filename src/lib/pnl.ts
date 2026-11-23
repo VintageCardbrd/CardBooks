@@ -27,13 +27,13 @@ export async function getPnL(startDate: string, endDate: string) {
   const netProfit = grossProfit - expenseTotal;
 
   // Weekly buckets
-  const weeks: Record<string, { revenue: number; profit: number; expenses: number }> = {};
+  const weeks: Record<string, { revenue: number; profit: number; overhead: number; cardPurchases: number }> = {};
   for (const r of sales || []) {
     const d = new Date(r.sold_at);
     const weekStart = new Date(d);
     weekStart.setDate(d.getDate() - d.getDay());
     const key = weekStart.toISOString().split('T')[0];
-    if (!weeks[key]) weeks[key] = { revenue: 0, profit: 0, expenses: 0 };
+    if (!weeks[key]) weeks[key] = { revenue: 0, profit: 0, overhead: 0, cardPurchases: 0 };
     const rev = Number(r.payout ?? r.sale_total ?? 0);
     const cost = Number(r.avg_cost_at_sale || 0) * Number(r.qty || 0);
     weeks[key].revenue += rev;
@@ -44,8 +44,13 @@ export async function getPnL(startDate: string, endDate: string) {
     const weekStart = new Date(d);
     weekStart.setDate(d.getDate() - d.getDay());
     const key = weekStart.toISOString().split('T')[0];
-    if (!weeks[key]) weeks[key] = { revenue: 0, profit: 0, expenses: 0 };
-    weeks[key].expenses += Number(e.amount || 0);
+    if (!weeks[key]) weeks[key] = { revenue: 0, profit: 0, overhead: 0, cardPurchases: 0 };
+    const amt = Number(e.amount || 0);
+    if (e.category === 'Card Purchase') {
+      weeks[key].cardPurchases += amt;
+    } else {
+      weeks[key].overhead += amt;
+    }
   }
 
   const weekly = Object.entries(weeks)
