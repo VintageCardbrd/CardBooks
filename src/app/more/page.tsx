@@ -17,6 +17,14 @@ export default function MorePage() {
           <div className="font-semibold">Expenses & Budget</div>
           <div className="text-sm text-muted">Log expenses, view envelopes</div>
         </Link>
+        <Link href="/pnl" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Profit & Loss</div>
+          <div className="text-sm text-muted">Reports and weekly trends</div>
+        </Link>
+        <Link href="/draws" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Owner Draws</div>
+          <div className="text-sm text-muted">Money taken out of the business</div>
+        </Link>
         <Link href="/mileage" className="card block hover:bg-paper transition">
           <div className="font-semibold">Mileage</div>
           <div className="text-sm text-muted">Trip log & presets</div>

@@ -7,10 +7,14 @@ import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpens
 const CATEGORIES = [
   'Card Purchase',
   'Supplies',
-  'Grading',
   'Postage',
   'Shipping',
+  'Grading',
+  'Advertising',
+  'Meals',
+  'Mileage',
   'Fees',
+  'Software',
   'Other',
 ];
 
