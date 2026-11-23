@@ -94,6 +94,20 @@ export default function PnLPage() {
                   </div>
                   {/* Chart area */}
                   <div className="absolute left-12 right-0 top-0 bottom-8 flex items-end gap-3">
+                    {/* Profit line */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <polyline
+                        fill="none"
+                        stroke="#22c55e"
+                        strokeWidth="1.5"
+                        vectorEffect="non-scaling-stroke"
+                        points={weeks.slice(-6).map((w: any, i: number, arr: any[]) => {
+                          const x = ((i + 0.5) / arr.length) * 100;
+                          const y = 100 - (Math.max(0, w.profit) / maxVal) * 100;
+                          return `${x},${y}`;
+                        }).join(' ')}
+                      />
+                    </svg>
                     {weeks.slice(-6).map((w: any, i: number) => {
                       const isSelected = selectedWeek?.week === w.week;
                       const revH = Math.max(2, (w.revenue / maxVal) * 100);
