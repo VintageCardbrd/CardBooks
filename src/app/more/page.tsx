@@ -25,6 +25,10 @@ export default function MorePage() {
           <div className="font-semibold">Owner Draws</div>
           <div className="text-sm text-muted">Money taken out of the business</div>
         </Link>
+        <Link href="/settings" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Budget Settings</div>
+          <div className="text-sm text-muted">Allocation percentages</div>
+        </Link>
         <Link href="/mileage" className="card block hover:bg-paper transition">
           <div className="font-semibold">Mileage</div>
           <div className="text-sm text-muted">Trip log & presets</div>

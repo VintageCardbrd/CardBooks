@@ -30,7 +30,48 @@ export async function logSale(sale: {
     .single();
 
   if (error) throw error;
+
+  // Allocate payout to budget envelopes
+  const payout = sale.payout ?? sale.sale_total;
+  if (payout > 0) {
+    await allocateToBudget(payout);
+  }
+
   return data;
+}
+
+async function allocateToBudget(amount: number) {
+  const { data: settings } = await supabase
+    .from('budget_books')
+    .select('key, value')
+    .in('key', ['alloc_inventory', 'alloc_operations', 'alloc_paycheck']);
+
+  const alloc = {
+    inventory: 0.65,
+    operations: 0.20,
+    paycheck: 0.15,
+  };
+  for (const s of settings || []) {
+    if (s.key === 'alloc_inventory') alloc.inventory = Number(s.value) / 100;
+    if (s.key === 'alloc_operations') alloc.operations = Number(s.value) / 100;
+    if (s.key === 'alloc_paycheck') alloc.paycheck = Number(s.value) / 100;
+  }
+
+  const updates = [
+    { key: 'inventory', add: amount * alloc.inventory },
+    { key: 'operations', add: amount * alloc.operations },
+    { key: 'paycheck', add: amount * alloc.paycheck },
+  ];
+
+  for (const u of updates) {
+    const { data: current } = await supabase
+      .from('budget_books')
+      .select('value')
+      .eq('key', u.key)
+      .single();
+    const newVal = (current?.value || 0) + u.add;
+    await supabase.from('budget_books').upsert({ key: u.key, value: newVal, updated_at: new Date().toISOString() });
+  }
 }
 
 export async function getSales(itemId?: string): Promise<Sale[]> {
