@@ -54,7 +54,14 @@ export async function getNextItemId(): Promise<string> {
   return prefix + String(num).padStart(4, '0');
 }
 
-export async function updateItemName(id: string, name: string) {
-  const { error } = await supabase.from('items').update({ name }).eq('id', id);
+export async function updateItem(id: string, updates: {
+  name?: string;
+  category?: string;
+  qty_bought?: number;
+  total_cost?: number;
+  notes?: string;
+  date_in?: string;
+}) {
+  const { error } = await supabase.from('items').update(updates).eq('id', id);
   if (error) throw error;
 }

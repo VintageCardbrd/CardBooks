@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { logSale } from '@/lib/sales';
-import { updateItemName } from '@/lib/items';
+import { updateItem } from '@/lib/items';
 import { getBins, moveToBin } from '@/lib/bins';
 import LabelPreview from '@/components/LabelPreview';
 import type { ItemStats } from '@/types';
@@ -37,8 +37,8 @@ export default function ItemDetailPage() {
   const [selectedBin, setSelectedBin] = useState('');
   const [newBin, setNewBin] = useState('WNBX1');
   const [binQty, setBinQty] = useState('1');
-  const [editName, setEditName] = useState('');
-  const [showEditName, setShowEditName] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', category: '', qty: '', cost: '', notes: '', dateIn: '' });
   const [showLabel, setShowLabel] = useState(false);
 
   const [saving, setSaving] = useState(false);
@@ -133,17 +133,36 @@ export default function ItemDetailPage() {
     setSaving(false);
   }
 
-  async function handleSaveName() {
-    if (!editName.trim() || !item) return;
+  async function handleSaveEdit() {
+    if (!item || !editForm.name.trim()) return;
     setSaving(true);
     try {
-      await updateItemName(item.id, editName.trim());
-      setShowEditName(false);
+      await updateItem(item.id, {
+        name: editForm.name.trim(),
+        category: editForm.category,
+        qty_bought: parseInt(editForm.qty) || item.qty_bought,
+        total_cost: parseFloat(editForm.cost) || item.total_cost,
+        notes: editForm.notes,
+        date_in: editForm.dateIn || item.date_in,
+      });
+      setShowEdit(false);
       await load();
     } catch (e: any) {
       alert(e.message || 'Failed');
     }
     setSaving(false);
+  }
+
+  function openEdit() {
+    setEditForm({
+      name: item.name,
+      category: item.category || 'Card',
+      qty: String(item.qty_bought),
+      cost: String(item.total_cost),
+      notes: item.notes || '',
+      dateIn: item.date_in || '',
+    });
+    setShowEdit(true);
   }
 
   async function handleMoveToBin() {
@@ -195,7 +214,7 @@ export default function ItemDetailPage() {
             'bg-blue-100 text-blue-800'
           }`}>{item.status}</span>
           <span className="text-muted">{item.category}</span>
-          <button className="text-xs text-muted underline ml-auto" onClick={() => { setEditName(item.name); setShowEditName(true); }}>Edit name</button>
+          <button className="text-xs text-muted underline ml-auto" onClick={openEdit}>Edit</button>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
@@ -319,14 +338,44 @@ export default function ItemDetailPage() {
         </div>
       </div>
 
-      {showEditName && (
+      {showEdit && (
         <div className="fixed inset-0 bg-black/50 z-30 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-5 space-y-3">
-            <div className="font-bold">Edit name</div>
-            <input className="input" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            <div className="font-bold">Edit item</div>
+            <div>
+              <label className="label">Name</label>
+              <input className="input" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+            </div>
+            <div>
+              <label className="label">Category</label>
+              <select className="input" value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}>
+                <option>Card</option>
+                <option>Wax</option>
+                <option>Bulk Lot</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Qty bought</label>
+                <input className="input" type="number" value={editForm.qty} onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Total cost ($)</label>
+                <input className="input" type="number" step="0.01" value={editForm.cost} onChange={(e) => setEditForm({ ...editForm, cost: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <label className="label">Date in</label>
+              <input className="input" type="date" value={editForm.dateIn} onChange={(e) => setEditForm({ ...editForm, dateIn: e.target.value })} />
+            </div>
+            <div>
+              <label className="label">Notes</label>
+              <textarea className="input" rows={2} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
+            </div>
             <div className="flex gap-2">
-              <button className="btn flex-1" onClick={handleSaveName} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-              <button className="btn-ghost flex-1" onClick={() => setShowEditName(false)}>Cancel</button>
+              <button className="btn flex-1" onClick={handleSaveEdit} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+              <button className="btn-ghost flex-1" onClick={() => setShowEdit(false)}>Cancel</button>
             </div>
           </div>
         </div>
