@@ -206,9 +206,6 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
           {printStatus && (
             <div className="text-xs text-center text-muted">{printStatus}</div>
           )}
-          <button className="btn" onClick={printViaSystem} disabled={!ready}>
-            Print via system
-          </button>
           <button className="btn-ghost" onClick={downloadLabel} disabled={!ready}>
             Share / Save label
           </button>
