@@ -41,7 +41,7 @@ export default function ReportsPage() {
           ].join(',');
         });
         downloadCSV(headers.join(',') + '\n' + rows.join('\n'), `sales-${start}-to-${end}.csv`);
-      } else {
+      } else if (type === 'pnl') {
         const d = await getPnL(start, end);
         const lines = [
           'Metric,Amount',
