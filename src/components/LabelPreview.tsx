@@ -109,9 +109,11 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     if (!w) return;
     w.document.write(`
       <html><head><title>Label</title>
-      <style>body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}
-      img{width:1.5in;height:auto;}
-      @media print { body { margin: 0; } img { width: 1.5in; } }</style>
+      <style>
+        @page { size: 12mm 40mm; margin: 0; }
+        body { margin: 0; padding: 0; }
+        img { width: 12mm; height: 40mm; display: block; }
+      </style>
       </head><body><img src="${dataUrl}" /></body></html>
     `);
     w.document.close();
