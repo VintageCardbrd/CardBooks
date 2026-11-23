@@ -47,7 +47,11 @@ export default function MonthlyPage() {
     const totalCogs = salesList.reduce((s, x) => s + Number(x.avg_cost_at_sale || 0) * Number(x.qty || 0), 0);
     const unitsBought = purchList.reduce((s, p) => s + Number(p.qty_bought || 0), 0);
     const unitsSold = salesList.reduce((s, x) => s + Number(x.qty || 0), 0);
-    const sellThrough = unitsBought > 0 ? (unitsSold / unitsBought) * 100 : 0;
+    const boughtIds = new Set(purchList.map((p) => p.id));
+    const soldFromThisMonth = salesList
+      .filter((s: any) => boughtIds.has(s.items?.id))
+      .reduce((sum, s) => sum + Number(s.qty || 0), 0);
+    const sellThrough = unitsBought > 0 ? (soldFromThisMonth / unitsBought) * 100 : 0;
 
     const salesWithDays = salesList.map((s: any) => {
       const dateIn = s.items?.date_in ? new Date(s.items.date_in) : null;
