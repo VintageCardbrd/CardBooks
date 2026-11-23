@@ -85,59 +85,56 @@ export default function PnLPage() {
             {weeks.length > 0 && (
               <div className="card">
                 <div className="text-sm font-semibold mb-3">WEEK OVER WEEK</div>
-                <div className="relative h-52">
-                  {/* Grid */}
-                  <div className="absolute inset-x-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-muted pointer-events-none pl-1">
-                    <div className="border-b border-line/40">{money(maxVal)}</div>
-                    <div className="border-b border-line/40">{money(maxVal * 0.5)}</div>
-                    <div className="border-b border-line/40">$0</div>
+                <div className="relative h-56">
+                  {/* Y-axis labels */}
+                  <div className="absolute left-0 top-0 bottom-8 w-10 flex flex-col justify-between text-[10px] text-muted">
+                    <div>{money(maxVal)}</div>
+                    <div>{money(maxVal * 0.5)}</div>
+                    <div>$0</div>
                   </div>
-                  {/* Bars + line */}
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* Profit line */}
-                    <polyline
-                      fill="none"
-                      stroke="#22c55e"
-                      strokeWidth="0.8"
-                      points={weeks.slice(-8).map((w: any, i: number) => {
-                        const x = ((i + 0.5) / Math.min(weeks.length, 8)) * 100;
-                        const y = 100 - (Math.max(0, w.profit) / maxVal) * 85;
-                        return `${x},${y}`;
-                      }).join(' ')}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-end gap-1 px-2 pb-6">
-                    {weeks.slice(-8).map((w: any) => {
+                  {/* Chart area */}
+                  <div className="absolute left-12 right-0 top-0 bottom-8 flex items-end gap-3">
+                    {weeks.slice(-6).map((w: any, i: number) => {
                       const isSelected = selectedWeek?.week === w.week;
-                      const revH = (w.revenue / maxVal) * 85;
-                      const cardH = (w.cardPurchases / maxVal) * 85;
-                      const overH = (w.overhead / maxVal) * 85;
+                      const revH = Math.max(2, (w.revenue / maxVal) * 100);
+                      const cardH = Math.max(w.cardPurchases > 0 ? 2 : 0, (w.cardPurchases / maxVal) * 100);
+                      const overH = Math.max(w.overhead > 0 ? 2 : 0, (w.overhead / maxVal) * 100);
+                      const profitPct = Math.max(0, w.profit) / maxVal;
                       return (
                         <button
                           key={w.week}
                           onClick={() => setSelectedWeek(w)}
-                          className={`flex-1 flex items-end justify-center gap-px h-full ${isSelected ? 'opacity-100' : 'opacity-80'}`}
+                          className={`flex-1 relative h-full flex items-end justify-center gap-1 ${isSelected ? 'opacity-100' : 'opacity-75'}`}
                         >
-                          <div className="w-1.5 bg-blue-500 rounded-t" style={{ height: `${revH}%` }} />
-                          <div className="w-1.5 bg-yellow-400 rounded-t" style={{ height: `${cardH}%` }} />
-                          <div className="w-1.5 bg-gray-400 rounded-t" style={{ height: `${overH}%` }} />
+                          {/* Revenue bar */}
+                          <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${revH}%` }} />
+                          {/* Card purchases bar */}
+                          {cardH > 0 && <div className="w-3 bg-yellow-400 rounded-t" style={{ height: `${cardH}%` }} />}
+                          {/* Overhead bar */}
+                          {overH > 0 && <div className="w-3 bg-gray-400 rounded-t" style={{ height: `${overH}%` }} />}
+                          {/* Profit dot */}
+                          <div
+                            className="absolute w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"
+                            style={{ bottom: `${profitPct * 100}%`, left: '50%', transform: 'translateX(-50%)' }}
+                          />
                         </button>
                       );
                     })}
                   </div>
-                  <div className="absolute bottom-0 left-2 right-2 flex gap-1">
-                    {weeks.slice(-8).map((w: any) => (
-                      <div key={w.week} className="flex-1 text-center text-[9px] text-muted">
-                        {new Date(w.week).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}
+                  {/* Week labels */}
+                  <div className="absolute left-12 right-0 bottom-0 h-6 flex gap-3">
+                    {weeks.slice(-6).map((w: any) => (
+                      <div key={w.week} className="flex-1 text-center text-[10px] text-muted">
+                        {new Date(w.week).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="flex gap-3 text-xs mt-2 flex-wrap">
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-blue-500 rounded-sm" /> Revenue</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500" /> Profit</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-gray-400 rounded-sm" /> Overhead</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-yellow-400 rounded-sm" /> Card purchases</span>
+                <div className="flex gap-4 text-xs mt-3 flex-wrap justify-center">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-blue-500 rounded-sm" /> Revenue</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-green-500 rounded-full" /> Profit</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-gray-400 rounded-sm" /> Overhead</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-yellow-400 rounded-sm" /> Card purchases</span>
                 </div>
               </div>
             )}
