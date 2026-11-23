@@ -143,7 +143,7 @@ export default function ItemDetailPage() {
         qty_bought: parseInt(editForm.qty) || item.qty_bought,
         total_cost: parseFloat(editForm.cost) || item.total_cost,
         notes: editForm.notes,
-        date_in: editForm.dateIn || item.date_in,
+        date_in: editForm.dateIn || item.date_in || undefined,
       });
       setShowEdit(false);
       await load();
