@@ -33,6 +33,10 @@ export default function MorePage() {
           <div className="font-semibold">Reports</div>
           <div className="text-sm text-muted">Export sales or P&L</div>
         </Link>
+        <Link href="/monthly" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Monthly Report</div>
+          <div className="text-sm text-muted">What bought and sold this month</div>
+        </Link>
         <Link href="/mileage" className="card block hover:bg-paper transition">
           <div className="font-semibold">Mileage</div>
           <div className="text-sm text-muted">Trip log & presets</div>
