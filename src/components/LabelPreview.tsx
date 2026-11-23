@@ -151,7 +151,7 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
 
       const Niimbot = (window as any).Niimbot;
       if (!Niimbot || !Niimbot.isSupported()) {
-        throw new Error('Web Bluetooth not supported in this browser. Use Chrome on Android or desktop.');
+        throw new Error('Web Bluetooth is not available in saved apps on Mac. Open card-books.vercel.app in Chrome and print from there.');
       }
 
       // D110 model config
@@ -210,7 +210,7 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
             Share / Save label
           </button>
           <div className="text-xs text-muted text-center">
-            Print works in Chrome (Android/desktop). Download always works for the NIIMBOT app.
+            Direct print requires Chrome (not a saved app). On Mac, open the site in Chrome. Download always works for the NIIMBOT app.
           </div>
           <button className="btn-ghost" onClick={onClose}>Close</button>
         </div>
