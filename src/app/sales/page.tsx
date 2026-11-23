@@ -179,6 +179,7 @@ export default function SalesPage() {
             </div>
 
             <button className="btn-ghost w-full" onClick={openPicker}>+ Add item from inventory</button>
+            <button className="btn-ghost w-full" onClick={() => setShowScan(true)}>Scan QR code</button>
 
             {batchItems.length === 0 ? (
               <div className="card text-center py-8 text-muted text-sm">No items in this batch yet.</div>
@@ -277,6 +278,26 @@ export default function SalesPage() {
         )}
       </div>
 
+      {showScan && (
+        <ScanModal
+          onScan={async (text) => {
+            setShowScan(false);
+            const id = text.split('/').pop() || text;
+            if (inStock.length === 0) {
+              const items = await getItems();
+              setInStock(items.filter((i) => i.qty_remaining > 0));
+            }
+            const found = inStock.find((i) => i.id === id) || (await getItems()).find((i) => i.id === id);
+            if (found && found.qty_remaining > 0) {
+              addToBatch(found);
+            } else {
+              alert('Item not found or out of stock: ' + id);
+            }
+          }}
+          onClose={() => setShowScan(false)}
+        />
+      )}
+
       {showPicker && (
         <div className="fixed inset-0 bg-black/50 z-30 flex items-end">
           <div className="bg-paper w-full max-w-lg mx-auto rounded-t-2xl p-4 max-h-[80vh] overflow-auto">
@@ -316,5 +337,66 @@ function NavItem({ href, label, active = false }: { href: string; label: string;
       <div className="text-lg mb-0.5">{active ? '●' : '○'}</div>
       {label}
     </Link>
+  );
+}
+
+function ScanModal({ onScan, onClose }: { onScan: (text: string) => void; onClose: () => void }) {
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let detector: any = null;
+    let raf = 0;
+
+    async function start() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        const video = document.getElementById('scan-video') as HTMLVideoElement;
+        if (!video) return;
+        video.srcObject = stream;
+        await video.play();
+
+        if ('BarcodeDetector' in window) {
+          detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+          const scan = async () => {
+            if (video.readyState === 4) {
+              try {
+                const codes = await detector.detect(video);
+                if (codes.length > 0) {
+                  onScan(codes[0].rawValue);
+                  return;
+                }
+              } catch {}
+            }
+            raf = requestAnimationFrame(scan);
+          };
+          raf = requestAnimationFrame(scan);
+        } else {
+          setError('QR scanning not supported in this browser. Use the item picker instead.');
+        }
+      } catch (e: any) {
+        setError('Camera access denied or unavailable.');
+      }
+    }
+    start();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black z-40 flex flex-col">
+      <div className="flex justify-between items-center p-4 text-white">
+        <div className="font-bold">Scan QR</div>
+        <button onClick={onClose}>Close</button>
+      </div>
+      {error ? (
+        <div className="flex-1 flex items-center justify-center text-white p-4 text-center">{error}</div>
+      ) : (
+        <video id="scan-video" className="flex-1 object-cover" playsInline muted />
+      )}
+    </div>
   );
 }
