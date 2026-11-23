@@ -69,7 +69,8 @@ export default function MonthlyPage() {
       profit: totalRevenue - totalCogs,
       unitsBought,
       unitsSold,
-      sellThrough,
+      avgDaysSold,
+      avgAgeInventory,
     });
     setLoading(false);
   }
