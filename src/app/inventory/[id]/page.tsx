@@ -39,6 +39,7 @@ export default function ItemDetailPage() {
   const [binQty, setBinQty] = useState('1');
   const [editName, setEditName] = useState('');
   const [showEditName, setShowEditName] = useState(false);
+  const [showLabel, setShowLabel] = useState(false);
 
   const [saving, setSaving] = useState(false);
 
