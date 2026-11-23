@@ -102,23 +102,6 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
     setReady(true);
   }
 
-  async function printViaSystem() {
-    if (!canvasRef.current) return;
-    const dataUrl = canvasRef.current.toDataURL('image/png');
-    const w = window.open('', '_blank');
-    if (!w) return;
-    w.document.write(`
-      <html><head><title>Label</title>
-      <style>
-        @page { size: 12mm 40mm; margin: 0; }
-        html, body { margin: 0; padding: 0; width: 12mm; height: 40mm; overflow: hidden; }
-        img { width: 12mm; height: 40mm; display: block; page-break-after: avoid; page-break-inside: avoid; }
-      </style>
-      </head><body><img src="${dataUrl}" onload="setTimeout(()=>window.print(),100)" /></body></html>
-    `);
-    w.document.close();
-  }
-
   async function downloadLabel() {
     const canvas = canvasRef.current;
     if (!canvas) return;
