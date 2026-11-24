@@ -66,6 +66,7 @@ export default function MonthlyPage() {
     const ageDays = (remaining || [])
       .filter((r: any) => r.date_in)
       .map((r: any) => Math.floor((now.getTime() - new Date(r.date_in).getTime()) / 86400000));
+    const avgAgeInventory = ageDays.length > 0 ? Math.round(ageDays.reduce((a: number, b: number) => a + b, 0) / ageDays.length) : 0;
     const { data: expenses } = await supabase
       .from('expenses')
       .select('amount')
