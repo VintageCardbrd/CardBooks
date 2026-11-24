@@ -17,7 +17,9 @@ export default function LabelPreview({ itemId, itemName, price, onClose }: Label
   const [printing, setPrinting] = useState(false);
   const [printStatus, setPrintStatus] = useState('');
 
-  const url = 'https://x.com/VintageCardbrd';
+  const url = typeof window !== 'undefined' 
+    ? `${window.location.origin}/inventory/${itemId}` 
+    : '';
 
   useEffect(() => {
     generateLabel();

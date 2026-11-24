@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { logSale } from '@/lib/sales';
+import { logSale, logRefund } from '@/lib/sales';
 import { updateItem } from '@/lib/items';
 import { getBins, moveToBin } from '@/lib/bins';
 import LabelPreview from '@/components/LabelPreview';
@@ -23,6 +23,8 @@ export default function ItemDetailPage() {
   const [salePrice, setSalePrice] = useState('');
   const [platform, setPlatform] = useState('eBay');
   const [payout, setPayout] = useState('');
+  const [refundAmount, setRefundAmount] = useState('');
+  const [refundReason, setRefundReason] = useState('');
 
   // Add stock
   const [addQty, setAddQty] = useState('1');
@@ -84,6 +86,25 @@ export default function ItemDetailPage() {
       });
       setSalePrice('');
       setPayout('');
+      await load();
+    } catch (e: any) {
+      alert(e.message);
+    }
+    setSaving(false);
+  }
+
+  async function handleRefund() {
+    if (!item || !refundAmount) return alert('Amount required');
+    setSaving(true);
+    try {
+      await logRefund({
+        item_id: item.id,
+        amount: parseFloat(refundAmount),
+        reason: refundReason || undefined,
+        platform,
+      });
+      setRefundAmount('');
+      setRefundReason('');
       await load();
     } catch (e: any) {
       alert(e.message);
@@ -269,6 +290,22 @@ export default function ItemDetailPage() {
             </button>
           </div>
         )}
+
+        {/* Log Refund */}
+        <div className="card space-y-3">
+          <div className="font-semibold text-sm">Log Refund</div>
+          <div>
+            <label className="label">Refund Amount ($)</label>
+            <input className="input" type="number" step="0.01" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} placeholder="0.00" />
+          </div>
+          <div>
+            <label className="label">Reason (optional)</label>
+            <input className="input" value={refundReason} onChange={e => setRefundReason(e.target.value)} placeholder="return, damage, etc" />
+          </div>
+          <button className="btn-ghost" onClick={handleRefund} disabled={saving}>
+            {saving ? 'Saving...' : 'Log refund'}
+          </button>
+        </div>
 
         {/* Add Stock */}
         <div className="card space-y-3">
