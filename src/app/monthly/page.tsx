@@ -66,7 +66,12 @@ export default function MonthlyPage() {
     const ageDays = (remaining || [])
       .filter((r: any) => r.date_in)
       .map((r: any) => Math.floor((now.getTime() - new Date(r.date_in).getTime()) / 86400000));
-    const avgAgeInventory = ageDays.length > 0 ? Math.round(ageDays.reduce((a: number, b: number) => a + b, 0) / ageDays.length) : 0;
+    const { data: expenses } = await supabase
+      .from('expenses')
+      .select('amount')
+      .gte('spent_at', start.split('T')[0])
+      .lt('spent_at', end.split('T')[0]);
+    const totalExpenses = (expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
 
     setData({
       purchases: purchList,
@@ -75,6 +80,7 @@ export default function MonthlyPage() {
       totalRevenue,
       totalCogs,
       profit: totalRevenue - totalCogs,
+      totalExpenses,
       unitsBought,
       unitsSold,
       avgDaysSold,
@@ -83,7 +89,8 @@ export default function MonthlyPage() {
     setLoading(false);
   }
 
-  const monthLabel = new Date(month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const [y, m] = month.split('-').map(Number);
+  const monthLabel = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   return (
     <div className="min-h-screen pb-24 bg-paper">
@@ -109,6 +116,20 @@ export default function MonthlyPage() {
               <div className="text-xl font-bold">{monthLabel}</div>
             </div>
 
+            <div className="grid grid-cols-3 gap-2 text-center text-sm mb-2">
+              <div className="border border-line rounded p-2">
+                <div className="text-xs text-muted">Revenue</div>
+                <div className="font-bold">{money(data.totalRevenue)}</div>
+              </div>
+              <div className="border border-line rounded p-2">
+                <div className="text-xs text-muted">Expenses</div>
+                <div className="font-bold">{money(data.totalExpenses)}</div>
+              </div>
+              <div className="border border-line rounded p-2">
+                <div className="text-xs text-muted">Profit</div>
+                <div className={`font-bold ${data.profit >= 0 ? 'text-green-700' : 'text-red-700'}`}>{money(data.profit)}</div>
+              </div>
+            </div>
             <div className="grid grid-cols-4 gap-2 text-center text-sm mb-4">
               <div className="border border-line rounded p-2">
                 <div className="text-xs text-muted">Bought</div>
@@ -125,10 +146,6 @@ export default function MonthlyPage() {
               <div className="border border-line rounded p-2">
                 <div className="text-xs text-muted">Avg age in stock</div>
                 <div className="font-bold">{data.avgAgeInventory}d</div>
-              </div>
-              <div className="border border-line rounded p-2">
-                <div className="text-xs text-muted">Profit</div>
-                <div className={`font-bold ${data.profit >= 0 ? 'text-green-700' : 'text-red-700'}`}>{money(data.profit)}</div>
               </div>
             </div>
 

@@ -40,6 +40,29 @@ export async function logSale(sale: {
   return data;
 }
 
+export async function logRefund(refund: {
+  item_id: string;
+  amount: number;
+  reason?: string;
+  platform?: string;
+}) {
+  const { data, error } = await supabase
+    .from('sales')
+    .insert([{
+      item_id: refund.item_id,
+      qty: 0,
+      sale_total: -Math.abs(refund.amount),
+      platform: refund.platform || 'Refund',
+      payout: -Math.abs(refund.amount),
+      avg_cost_at_sale: 0,
+      sold_at: new Date().toISOString(),
+    }])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 async function allocateToBudget(amount: number) {
   const { data: settings } = await supabase
     .from('budget_books')

@@ -30,6 +30,20 @@ export async function addExpense(expense: {
     .select()
     .single();
   if (error) throw error;
+
+  // If charged to card, increase card_owed
+  if (expense.charged_to_card) {
+    const { data: book } = await supabase
+      .from('budget_books')
+      .select('value')
+      .eq('key', 'card_owed')
+      .single();
+    const current = Number(book?.value || 0);
+    await supabase
+      .from('budget_books')
+      .upsert({ key: 'card_owed', value: current + expense.amount, updated_at: new Date().toISOString() });
+  }
+
   return data;
 }
 
