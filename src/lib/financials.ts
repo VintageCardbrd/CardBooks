@@ -35,15 +35,21 @@ export async function getFinancials(startDate: string, endDate: string) {
   const inventory = (items || []).reduce((s, i) => s + Number(i.qty_remaining || 0) * Number(i.avg_cost || 0), 0);
   const bookMap: Record<string, number> = {};
   for (const b of books || []) bookMap[b.key] = Number(b.value || 0);
-  const cash = (bookMap.checking || 0) - (bookMap.card_owed || 0);
-  const equity = cash + inventory; // simplified: assets - liabilities
+  const checking = bookMap.checking || 0;
+  const cardOwed = bookMap.card_owed || 0;
+  const assets = checking + inventory;
+  const liabilities = cardOwed;
+  const equity = assets - liabilities;
 
-  // Cash flow
+  // Cash flow (period)
   const cashIn = revenue;
   const cashOutCards = cardPurchases;
   const cashOutOps = operatingExpenses;
   const cashOutDraws = drawsTotal;
-  const netCash = cashIn - cashOutCards - cashOutOps - cashOutDraws;
+  const operatingCash = cashIn - cashOutOps;
+  const investingCash = -cashOutCards;
+  const financingCash = -cashOutDraws;
+  const netCash = operatingCash + investingCash + financingCash;
 
   // Expenses by category (excluding card purchases)
   const byCategory: Record<string, number> = {};
@@ -62,12 +68,18 @@ export async function getFinancials(startDate: string, endDate: string) {
     cardPurchases,
     drawsTotal,
     inventory,
-    cash,
+    checking,
+    cardOwed,
+    assets,
+    liabilities,
     equity,
     cashIn,
     cashOutCards,
     cashOutOps,
     cashOutDraws,
+    operatingCash,
+    investingCash,
+    financingCash,
     netCash,
     byCategory: Object.entries(byCategory).map(([category, amount]) => ({ category, amount })),
   };

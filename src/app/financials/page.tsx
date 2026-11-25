@@ -78,21 +78,32 @@ export default function FinancialsPage() {
 
             {tab === 'bs' && (
               <div className="card space-y-2 text-sm">
-                <div className="text-xs text-muted">As of now</div>
-                <div className="flex justify-between"><span>Cash (checking − card)</span><span>{m(data.cash)}</span></div>
-                <div className="flex justify-between"><span>Inventory on hand</span><span>{m(data.inventory)}</span></div>
-                <div className="flex justify-between font-bold border-t border-line pt-2"><span>Owner’s equity</span><span>{m(data.equity)}</span></div>
-                <div className="text-xs text-muted pt-2">Simplified: assets minus credit card balance.</div>
+                <div className="text-xs font-semibold text-muted">Assets</div>
+                <div className="flex justify-between"><span>Checking</span><span>{m(data.checking)}</span></div>
+                <div className="flex justify-between"><span>Inventory (at cost)</span><span>{m(data.inventory)}</span></div>
+                <div className="flex justify-between font-semibold border-t border-line pt-2"><span>Total assets</span><span>{m(data.assets)}</span></div>
+                <div className="text-xs font-semibold text-muted pt-2">Liabilities</div>
+                <div className="flex justify-between"><span>Credit card</span><span>{m(data.cardOwed)}</span></div>
+                <div className="flex justify-between font-semibold border-t border-line pt-2"><span>Total liabilities</span><span>{m(data.liabilities)}</span></div>
+                <div className="flex justify-between font-bold text-base border-t border-line pt-2"><span>Equity</span><span className={data.equity >= 0 ? 'text-green-700' : 'text-red-700'}>{m(data.equity)}</span></div>
+                <div className="text-xs text-muted pt-2">Assets minus liabilities. Inventory is remaining stock at cost.</div>
               </div>
             )}
 
             {tab === 'cf' && (
               <div className="card space-y-2 text-sm">
+                <div className="text-xs font-semibold text-muted">Operating</div>
                 <div className="flex justify-between"><span>Cash in (sales)</span><span>{m(data.cashIn)}</span></div>
-                <div className="flex justify-between"><span>Cash out (card purchases)</span><span>({m(data.cashOutCards)})</span></div>
                 <div className="flex justify-between"><span>Cash out (operating)</span><span>({m(data.cashOutOps)})</span></div>
-                <div className="flex justify-between"><span>Cash out (draws)</span><span>({m(data.cashOutDraws)})</span></div>
-                <div className="flex justify-between font-bold border-t border-line pt-2"><span>Net cash change</span><span className={data.netCash >= 0 ? 'text-green-700' : 'text-red-700'}>{m(data.netCash)}</span></div>
+                <div className="flex justify-between font-semibold"><span>Operating cash</span><span>{m(data.operatingCash)}</span></div>
+                <div className="text-xs font-semibold text-muted pt-2">Investing</div>
+                <div className="flex justify-between"><span>Card purchases (inventory)</span><span>({m(data.cashOutCards)})</span></div>
+                <div className="flex justify-between font-semibold"><span>Investing cash</span><span>{m(data.investingCash)}</span></div>
+                <div className="text-xs font-semibold text-muted pt-2">Financing</div>
+                <div className="flex justify-between"><span>Owner draws</span><span>({m(data.cashOutDraws)})</span></div>
+                <div className="flex justify-between font-semibold"><span>Financing cash</span><span>{m(data.financingCash)}</span></div>
+                <div className="flex justify-between font-bold text-base border-t border-line pt-2"><span>Net cash change</span><span className={data.netCash >= 0 ? 'text-green-700' : 'text-red-700'}>{m(data.netCash)}</span></div>
+                <div className="text-xs text-muted pt-2">Card purchases are inventory, not expenses. Draws are money taken out.</div>
               </div>
             )}
           </div>
