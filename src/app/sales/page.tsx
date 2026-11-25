@@ -113,12 +113,16 @@ export default function SalesPage() {
     }
   }
 
+  const now = new Date();
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
 
   const filtered = sales.filter((s) => {
     if (platform !== 'All' && s.platform !== platform) return false;
-    if (days < 9999 && new Date(s.sold_at) < cutoff) return false;
+    const sold = new Date(s.sold_at);
+    if (days === 365) return sold >= yearStart;
+    if (days < 9999 && sold < cutoff) return false;
     return true;
   });
 
@@ -239,7 +243,7 @@ export default function SalesPage() {
               <select className="input flex-1" value={days} onChange={(e) => setDays(Number(e.target.value))}>
                 <option value={30}>Last 30 days</option>
                 <option value={90}>Last 90 days</option>
-                <option value={365}>Last year</option>
+                <option value={365}>This year</option>
                 <option value={9999}>All time</option>
               </select>
             </div>
