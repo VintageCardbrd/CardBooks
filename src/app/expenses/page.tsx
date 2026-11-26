@@ -185,7 +185,7 @@ export default function ExpensesPage() {
         ) : (
           <div className="space-y-3">
             <div className="text-sm text-muted mb-2">Envelope balances (tap to edit)</div>
-            {books.filter((b) => !b.key.startsWith('alloc_')).map((b) => (
+            {books.filter((b) => !b.key.startsWith('alloc_') && !b.key.endsWith('_opening')).map((b) => (
               <div key={b.key} className="card flex items-center justify-between">
                 <div className="font-medium text-sm capitalize">{b.key.replace(/_/g, ' ')}</div>
                 <input
