@@ -13,13 +13,29 @@ export default function MorePage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 pt-6 space-y-3">
-        <Link href="/lots" className="card block hover:bg-paper transition">
-          <div className="font-semibold">Lots</div>
-          <div className="text-sm text-muted">Purchase lots and what sold</div>
-        </Link>
         <Link href="/financials" className="card block hover:bg-paper transition">
           <div className="font-semibold">Financials</div>
           <div className="text-sm text-muted">P&L, balance sheet, cash flow</div>
+        </Link>
+        <Link href="/monthly" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Monthly Report</div>
+          <div className="text-sm text-muted">What bought and sold this month</div>
+        </Link>
+        <Link href="/reports" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Reports</div>
+          <div className="text-sm text-muted">Export sales or P&L</div>
+        </Link>
+        <Link href="/scoreboard" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Scoreboard</div>
+          <div className="text-sm text-muted">Weekly profit WIG & lead measures</div>
+        </Link>
+        <Link href="/mileage" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Mileage</div>
+          <div className="text-sm text-muted">Trip log & presets</div>
+        </Link>
+        <Link href="/lots" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Lots</div>
+          <div className="text-sm text-muted">Purchase lots and what sold</div>
         </Link>
         <Link href="/draws" className="card block hover:bg-paper transition">
           <div className="font-semibold">Owner Draws</div>
@@ -28,22 +44,6 @@ export default function MorePage() {
         <Link href="/settings" className="card block hover:bg-paper transition">
           <div className="font-semibold">Budget Settings</div>
           <div className="text-sm text-muted">Allocation percentages</div>
-        </Link>
-        <Link href="/reports" className="card block hover:bg-paper transition">
-          <div className="font-semibold">Reports</div>
-          <div className="text-sm text-muted">Export sales or P&L</div>
-        </Link>
-        <Link href="/monthly" className="card block hover:bg-paper transition">
-          <div className="font-semibold">Monthly Report</div>
-          <div className="text-sm text-muted">What bought and sold this month</div>
-        </Link>
-        <Link href="/mileage" className="card block hover:bg-paper transition">
-          <div className="font-semibold">Mileage</div>
-          <div className="text-sm text-muted">Trip log & presets</div>
-        </Link>
-        <Link href="/scoreboard" className="card block hover:bg-paper transition">
-          <div className="font-semibold">Scoreboard</div>
-          <div className="text-sm text-muted">Weekly profit WIG & lead measures</div>
         </Link>
         <div className="card opacity-60">
           <div className="font-semibold">Sets</div>
