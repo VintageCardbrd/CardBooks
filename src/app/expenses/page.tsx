@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense } from '@/lib/expenses';
+import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense, logCardPayment } from '@/lib/expenses';
 
 const CATEGORIES = [
   'Card Purchase',
@@ -30,6 +30,8 @@ export default function ExpensesPage() {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
 
   // Expense form
   const [category, setCategory] = useState('Supplies');
@@ -67,6 +69,20 @@ export default function ExpensesPage() {
       setVendor('');
       setNotes('');
       setCharged(false);
+      await load();
+    } catch (err: any) {
+      alert(err.message || 'Failed');
+    }
+    setSaving(false);
+  }
+
+  async function handlePayment() {
+    if (!paymentAmount) return;
+    setSaving(true);
+    try {
+      await logCardPayment(parseFloat(paymentAmount));
+      setShowPayment(false);
+      setPaymentAmount('');
       await load();
     } catch (err: any) {
       alert(err.message || 'Failed');
@@ -134,6 +150,9 @@ export default function ExpensesPage() {
               <div className="text-sm text-muted">Total logged: ${totalExpenses.toFixed(2)}</div>
               <button className="btn text-sm py-1.5 px-3" onClick={() => setShowAdd(true)}>
                 + Add
+              </button>
+              <button className="btn-ghost text-sm py-1.5 px-3" onClick={() => setShowPayment(true)}>
+                Pay card
               </button>
             </div>
 
@@ -215,6 +234,25 @@ export default function ExpensesPage() {
                 {saving ? 'Saving...' : 'Save'}
               </button>
               <button className="btn-ghost flex-1" onClick={() => setShowAdd(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPayment && (
+        <div className="fixed inset-0 bg-black/50 z-30 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 space-y-3">
+            <div className="font-bold">Pay credit card</div>
+            <div>
+              <label className="label">Amount</label>
+              <input className="input" type="number" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="0.00" />
+            </div>
+            <div className="text-xs text-muted">This reduces the card balance and deducts from checking.</div>
+            <div className="flex gap-2 pt-2">
+              <button className="btn flex-1" onClick={handlePayment} disabled={saving}>
+                {saving ? 'Saving...' : 'Pay'}
+              </button>
+              <button className="btn-ghost flex-1" onClick={() => setShowPayment(false)}>Cancel</button>
             </div>
           </div>
         </div>

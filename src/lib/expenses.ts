@@ -31,20 +31,39 @@ export async function addExpense(expense: {
     .single();
   if (error) throw error;
 
-  // If charged to card, increase card_owed
   if (expense.charged_to_card) {
-    const { data: book } = await supabase
-      .from('budget_books')
-      .select('value')
-      .eq('key', 'card_owed')
-      .single();
+    // Add to card balance
+    const { data: book } = await supabase.from('budget_books').select('value').eq('key', 'card_owed').single();
     const current = Number(book?.value || 0);
-    await supabase
-      .from('budget_books')
-      .upsert({ key: 'card_owed', value: current + expense.amount, updated_at: new Date().toISOString() });
+    await supabase.from('budget_books').upsert({ key: 'card_owed', value: current + expense.amount, updated_at: new Date().toISOString() });
+  } else {
+    // Deduct from checking
+    const { data: book } = await supabase.from('budget_books').select('value').eq('key', 'checking').single();
+    const current = Number(book?.value || 0);
+    await supabase.from('budget_books').upsert({ key: 'checking', value: current - expense.amount, updated_at: new Date().toISOString() });
   }
 
   return data;
+}
+
+export async function logCardPayment(amount: number, notes?: string) {
+  // Reduce card owed and deduct from checking
+  const { data: card } = await supabase.from('budget_books').select('value').eq('key', 'card_owed').single();
+  const { data: checking } = await supabase.from('budget_books').select('value').eq('key', 'checking').single();
+  const cardCurrent = Number(card?.value || 0);
+  const checkingCurrent = Number(checking?.value || 0);
+
+  await supabase.from('budget_books').upsert({ key: 'card_owed', value: Math.max(0, cardCurrent - amount), updated_at: new Date().toISOString() });
+  await supabase.from('budget_books').upsert({ key: 'checking', value: checkingCurrent - amount, updated_at: new Date().toISOString() });
+
+  // Log as a budget move for history
+  await supabase.from('budget_moves').insert([{
+    move_type: 'Card Payment',
+    from_envelope: 'checking',
+    to_envelope: 'card_owed',
+    amount,
+    note: notes || 'Card payment',
+  }]);
 }
 
 export async function deleteExpense(id: string) {
