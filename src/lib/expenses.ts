@@ -105,7 +105,7 @@ export async function getFixedCosts() {
   return data || [];
 }
 
-export async function addFixedCost(cost: { name: string; amount: number; frequency: string }) {
+export async function addFixedCost(cost: { name: string; amount: number; frequency: string; category?: string }) {
   const { data, error } = await supabase
     .from('fixed_costs')
     .insert([cost])
@@ -115,7 +115,7 @@ export async function addFixedCost(cost: { name: string; amount: number; frequen
   return data;
 }
 
-export async function updateFixedCost(id: string, cost: { name: string; amount: number; frequency: string }) {
+export async function updateFixedCost(id: string, cost: { name: string; amount: number; frequency: string; category?: string }) {
   const { data, error } = await supabase
     .from('fixed_costs')
     .update(cost)

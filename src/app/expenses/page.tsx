@@ -233,9 +233,12 @@ export default function ExpensesPage() {
                   {fixedCosts.map((fc) => {
                     const monthly = fc.frequency === 'yearly' ? Number(fc.amount) / 12 : Number(fc.amount);
                     const last = expenses.find((e) => 
+                      (fc.category && e.category === fc.category && (
+                        (e.vendor && e.vendor.toLowerCase().includes(fc.name.toLowerCase())) ||
+                        (e.notes && e.notes.toLowerCase().includes(fc.name.toLowerCase()))
+                      )) ||
                       (e.vendor && e.vendor.toLowerCase().includes(fc.name.toLowerCase())) ||
-                      (e.notes && e.notes.toLowerCase().includes(fc.name.toLowerCase())) ||
-                      (e.category && e.category.toLowerCase().includes(fc.name.toLowerCase()))
+                      (e.notes && e.notes.toLowerCase().includes(fc.name.toLowerCase()))
                     );
                     return (
                       <div key={fc.id} className="card">

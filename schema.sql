@@ -155,6 +155,7 @@ create table fixed_costs (
   name            text not null,
   amount          numeric(12,2) not null,
   frequency       text not null default 'monthly', -- monthly, yearly
+  category        text,
   created_at      timestamptz default now()
 );
 

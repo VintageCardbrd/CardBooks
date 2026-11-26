@@ -16,6 +16,7 @@ export default function SettingsPage() {
   const [fcName, setFcName] = useState('');
   const [fcAmount, setFcAmount] = useState('');
   const [fcFreq, setFcFreq] = useState('monthly');
+  const [fcCategory, setFcCategory] = useState('Software');
 
   useEffect(() => {
     load();
@@ -58,6 +59,7 @@ export default function SettingsPage() {
     setFcName('');
     setFcAmount('');
     setFcFreq('monthly');
+    setFcCategory('Software');
     setShowAdd(true);
   }
 
@@ -66,6 +68,7 @@ export default function SettingsPage() {
     setFcName(fc.name);
     setFcAmount(String(fc.amount));
     setFcFreq(fc.frequency);
+    setFcCategory(fc.category || 'Software');
     setShowAdd(true);
   }
 
@@ -74,9 +77,9 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       if (editing) {
-        await updateFixedCost(editing.id, { name: fcName, amount: parseFloat(fcAmount), frequency: fcFreq });
+        await updateFixedCost(editing.id, { name: fcName, amount: parseFloat(fcAmount), frequency: fcFreq, category: fcCategory });
       } else {
-        await addFixedCost({ name: fcName, amount: parseFloat(fcAmount), frequency: fcFreq });
+        await addFixedCost({ name: fcName, amount: parseFloat(fcAmount), frequency: fcFreq, category: fcCategory });
       }
       setShowAdd(false);
       await load();
@@ -149,7 +152,7 @@ export default function SettingsPage() {
                 <div key={fc.id} className="card flex justify-between items-center">
                   <div>
                     <div className="font-medium text-sm">{fc.name}</div>
-                    <div className="text-xs text-muted">{fc.frequency} · ${Number(fc.amount).toFixed(2)}</div>
+                    <div className="text-xs text-muted">{fc.frequency} · ${Number(fc.amount).toFixed(2)}{fc.category && ` · ${fc.category}`}</div>
                   </div>
                   <div className="flex gap-2">
                     <button className="text-xs text-ink" onClick={() => openEdit(fc)}>Edit</button>
@@ -179,6 +182,23 @@ export default function SettingsPage() {
               <select className="input" value={fcFreq} onChange={(e) => setFcFreq(e.target.value)}>
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Category</label>
+              <select className="input" value={fcCategory} onChange={(e) => setFcCategory(e.target.value)}>
+                <option>Software</option>
+                <option>Office expenses</option>
+                <option>Supplies</option>
+                <option>Advertising</option>
+                <option>Meals</option>
+                <option>Mileage</option>
+                <option>Fees</option>
+                <option>Home office</option>
+                <option>Interest</option>
+                <option>Commissions</option>
+                <option>Legal and professional fees</option>
+                <option>Other</option>
               </select>
             </div>
             <div className="flex gap-2 pt-2">
