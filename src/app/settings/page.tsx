@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getBudgetBooks, updateBudgetBook } from '@/lib/expenses';
+import { getBudgetBooks, updateBudgetBook, getFixedCosts, addFixedCost, updateFixedCost, deleteFixedCost } from '@/lib/expenses';
 
 export default function SettingsPage() {
   const [inv, setInv] = useState('65');
@@ -10,6 +10,12 @@ export default function SettingsPage() {
   const [pay, setPay] = useState('15');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [fixedCosts, setFixedCosts] = useState<any[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [fcName, setFcName] = useState('');
+  const [fcAmount, setFcAmount] = useState('');
+  const [fcFreq, setFcFreq] = useState('monthly');
 
   useEffect(() => {
     load();
@@ -22,6 +28,8 @@ export default function SettingsPage() {
     if (map.alloc_inventory) setInv(String(map.alloc_inventory));
     if (map.alloc_operations) setOps(String(map.alloc_operations));
     if (map.alloc_paycheck) setPay(String(map.alloc_paycheck));
+    const fc = await getFixedCosts();
+    setFixedCosts(fc);
   }
 
   async function handleSave() {
@@ -43,6 +51,49 @@ export default function SettingsPage() {
       alert(e.message || 'Failed');
     }
     setSaving(false);
+  }
+
+  function openAdd() {
+    setEditing(null);
+    setFcName('');
+    setFcAmount('');
+    setFcFreq('monthly');
+    setShowAdd(true);
+  }
+
+  function openEdit(fc: any) {
+    setEditing(fc);
+    setFcName(fc.name);
+    setFcAmount(String(fc.amount));
+    setFcFreq(fc.frequency);
+    setShowAdd(true);
+  }
+
+  async function handleSaveFC() {
+    if (!fcName || !fcAmount) return;
+    setSaving(true);
+    try {
+      if (editing) {
+        await updateFixedCost(editing.id, { name: fcName, amount: parseFloat(fcAmount), frequency: fcFreq });
+      } else {
+        await addFixedCost({ name: fcName, amount: parseFloat(fcAmount), frequency: fcFreq });
+      }
+      setShowAdd(false);
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Failed');
+    }
+    setSaving(false);
+  }
+
+  async function handleDeleteFC(id: string) {
+    if (!confirm('Delete this fixed cost?')) return;
+    try {
+      await deleteFixedCost(id);
+      await load();
+    } catch (e: any) {
+      alert(e.message || 'Failed');
+    }
   }
 
   const total = (parseFloat(inv) || 0) + (parseFloat(ops) || 0) + (parseFloat(pay) || 0);
@@ -84,7 +135,59 @@ export default function SettingsPage() {
         <div className="mt-4 text-sm text-muted">
           Current defaults are 65 / 20 / 15. Adjust anytime. New sales will use the saved percentages.
         </div>
+
+        <div className="mt-6">
+          <div className="flex justify-between items-center mb-2">
+            <div className="font-semibold">Fixed Costs</div>
+            <button className="btn text-sm py-1 px-3" onClick={openAdd}>+ Add</button>
+          </div>
+          {fixedCosts.length === 0 ? (
+            <div className="card text-center py-6 text-muted text-sm">No fixed costs yet.</div>
+          ) : (
+            <div className="space-y-2">
+              {fixedCosts.map((fc) => (
+                <div key={fc.id} className="card flex justify-between items-center">
+                  <div>
+                    <div className="font-medium text-sm">{fc.name}</div>
+                    <div className="text-xs text-muted">{fc.frequency} · ${Number(fc.amount).toFixed(2)}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button className="text-xs text-ink" onClick={() => openEdit(fc)}>Edit</button>
+                    <button className="text-xs text-red-600" onClick={() => handleDeleteFC(fc.id)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {showAdd && (
+        <div className="fixed inset-0 bg-black/50 z-30 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 space-y-3">
+            <div className="font-bold">{editing ? 'Edit' : 'Add'} Fixed Cost</div>
+            <div>
+              <label className="label">Name</label>
+              <input className="input" value={fcName} onChange={(e) => setFcName(e.target.value)} placeholder="Internet" />
+            </div>
+            <div>
+              <label className="label">Amount</label>
+              <input className="input" type="number" step="0.01" value={fcAmount} onChange={(e) => setFcAmount(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Frequency</label>
+              <select className="input" value={fcFreq} onChange={(e) => setFcFreq(e.target.value)}>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button className="btn flex-1" onClick={handleSaveFC} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+              <button className="btn-ghost flex-1" onClick={() => setShowAdd(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-line">
         <div className="max-w-lg mx-auto flex">

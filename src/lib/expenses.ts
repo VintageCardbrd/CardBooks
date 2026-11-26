@@ -92,3 +92,49 @@ export async function updateBudgetBook(key: string, value: number) {
   if (error) throw error;
   return data;
 }
+
+export async function getFixedCosts() {
+  const { data, error } = await supabase
+    .from('fixed_costs')
+    .select('*')
+    .order('name');
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function addFixedCost(cost: { name: string; amount: number; frequency: string }) {
+  const { data, error } = await supabase
+    .from('fixed_costs')
+    .insert([cost])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateFixedCost(id: string, cost: { name: string; amount: number; frequency: string }) {
+  const { data, error } = await supabase
+    .from('fixed_costs')
+    .update(cost)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteFixedCost(id: string) {
+  const { error } = await supabase.from('fixed_costs').delete().eq('id', id);
+  if (error) throw error;
+}
+  const { data, error } = await supabase
+    .from('budget_books')
+    .upsert({ key, value, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}

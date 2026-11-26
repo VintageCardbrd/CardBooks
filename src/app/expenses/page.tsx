@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense, logCardPayment } from '@/lib/expenses';
+import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense, logCardPayment, getFixedCosts } from '@/lib/expenses';
 
 const CATEGORIES = [
   'Card Purchase',
@@ -28,6 +28,7 @@ export default function ExpensesPage() {
   const [tab, setTab] = useState<'expenses' | 'budget'>('expenses');
   const [expenses, setExpenses] = useState<any[]>([]);
   const [books, setBooks] = useState<any[]>([]);
+  const [fixedCosts, setFixedCosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
@@ -47,9 +48,10 @@ export default function ExpensesPage() {
 
   async function load() {
     setLoading(true);
-    const [e, b] = await Promise.all([getExpenses(), getBudgetBooks()]);
+    const [e, b, fc] = await Promise.all([getExpenses(), getBudgetBooks(), getFixedCosts()]);
     setExpenses(e);
     setBooks(b);
+    setFixedCosts(fc);
     setLoading(false);
   }
 
@@ -112,6 +114,13 @@ export default function ExpensesPage() {
   }
 
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+  const alloc = { inventory: 65, operations: 20, paycheck: 15 };
+  for (const b of books) {
+    if (b.key === 'alloc_inventory') alloc.inventory = Number(b.value);
+    if (b.key === 'alloc_operations') alloc.operations = Number(b.value);
+    if (b.key === 'alloc_paycheck') alloc.paycheck = Number(b.value);
+  }
 
   return (
     <div className="min-h-screen pb-24">
@@ -204,9 +213,9 @@ export default function ExpensesPage() {
                     <div>
                       <div className="font-medium text-sm capitalize">{b.key}</div>
                       <div className="text-xs text-muted">
-                        {b.key === 'inventory' && '65% of payouts'}
-                        {b.key === 'operations' && '20% of payouts'}
-                        {b.key === 'paycheck' && '15% of payouts'}
+                        {b.key === 'inventory' && `${alloc.inventory}% of payouts`}
+                        {b.key === 'operations' && `${alloc.operations}% of payouts`}
+                        {b.key === 'paycheck' && `${alloc.paycheck}% of payouts`}
                       </div>
                     </div>
                     <input type="number" step="0.01" className="input w-28 text-right" defaultValue={Number(b.value).toFixed(2)} onBlur={(e) => handleUpdateBook(b.key, e.target.value)} />
@@ -217,13 +226,28 @@ export default function ExpensesPage() {
 
             <div>
               <div className="text-sm font-semibold mb-2">Operations fixed costs</div>
-              <div className="card text-sm space-y-1">
-                <div className="flex justify-between"><span>Internet</span><span>$30/mo</span></div>
-                <div className="flex justify-between"><span>Grok</span><span>$32/mo</span></div>
-                <div className="flex justify-between"><span>Claude</span><span>~$18/mo</span></div>
-                <div className="flex justify-between text-muted text-xs pt-1 border-t border-line"><span>Travel / meals</span><span>set aside</span></div>
-                <div className="text-xs text-muted pt-1">These come out of Operations. Log them as expenses when paid.</div>
-              </div>
+              {fixedCosts.length === 0 ? (
+                <div className="card text-center py-4 text-muted text-sm">No fixed costs set. Add them in Budget Settings.</div>
+              ) : (
+                <div className="space-y-2">
+                  {fixedCosts.map((fc) => {
+                    const monthly = fc.frequency === 'yearly' ? Number(fc.amount) / 12 : Number(fc.amount);
+                    const last = expenses.find((e) => e.category === 'Software' || e.vendor?.toLowerCase().includes(fc.name.toLowerCase()) || e.notes?.toLowerCase().includes(fc.name.toLowerCase()));
+                    return (
+                      <div key={fc.id} className="card">
+                        <div className="flex justify-between">
+                          <div className="font-medium text-sm">{fc.name}</div>
+                          <div className="font-bold text-sm">${monthly.toFixed(0)}/mo</div>
+                        </div>
+                        <div className="text-xs text-muted">
+                          {fc.frequency} · ${Number(fc.amount).toFixed(2)}
+                          {last ? ` · last paid ${new Date(last.spent_at).toLocaleDateString()}` : ' · not yet paid'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}

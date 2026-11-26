@@ -150,6 +150,14 @@ create table budget_moves (
   created_at      timestamptz default now()
 );
 
+create table fixed_costs (
+  id              uuid primary key default uuid_generate_v4(),
+  name            text not null,
+  amount          numeric(12,2) not null,
+  frequency       text not null default 'monthly', -- monthly, yearly
+  created_at      timestamptz default now()
+);
+
 create table draws (
   id              uuid primary key default uuid_generate_v4(),
   amount          numeric(12,2) not null,
