@@ -183,20 +183,48 @@ export default function ExpensesPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="text-sm text-muted mb-2">Envelope balances (tap to edit)</div>
-            {books.filter((b) => !b.key.startsWith('alloc_') && !b.key.endsWith('_opening')).map((b) => (
-              <div key={b.key} className="card flex items-center justify-between">
-                <div className="font-medium text-sm capitalize">{b.key.replace(/_/g, ' ')}</div>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="input w-28 text-right"
-                  defaultValue={Number(b.value).toFixed(2)}
-                  onBlur={(e) => handleUpdateBook(b.key, e.target.value)}
-                />
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm font-semibold mb-2">Cash</div>
+              <div className="space-y-2">
+                {books.filter((b) => b.key === 'checking' || b.key === 'card_owed').map((b) => (
+                  <div key={b.key} className="card flex items-center justify-between">
+                    <div className="font-medium text-sm">{b.key === 'card_owed' ? 'Credit Card' : 'Checking'}</div>
+                    <input type="number" step="0.01" className="input w-28 text-right" defaultValue={Number(b.value).toFixed(2)} onBlur={(e) => handleUpdateBook(b.key, e.target.value)} />
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div>
+              <div className="text-sm font-semibold mb-2">Envelopes</div>
+              <div className="space-y-2">
+                {books.filter((b) => ['inventory', 'operations', 'paycheck'].includes(b.key)).map((b) => (
+                  <div key={b.key} className="card flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-sm capitalize">{b.key}</div>
+                      <div className="text-xs text-muted">
+                        {b.key === 'inventory' && '65% of payouts'}
+                        {b.key === 'operations' && '20% of payouts'}
+                        {b.key === 'paycheck' && '15% of payouts'}
+                      </div>
+                    </div>
+                    <input type="number" step="0.01" className="input w-28 text-right" defaultValue={Number(b.value).toFixed(2)} onBlur={(e) => handleUpdateBook(b.key, e.target.value)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-semibold mb-2">Operations fixed costs</div>
+              <div className="card text-sm space-y-1">
+                <div className="flex justify-between"><span>Internet</span><span>$30/mo</span></div>
+                <div className="flex justify-between"><span>Grok</span><span>$32/mo</span></div>
+                <div className="flex justify-between"><span>Claude</span><span>~$18/mo</span></div>
+                <div className="flex justify-between text-muted text-xs pt-1 border-t border-line"><span>Travel / meals</span><span>set aside</span></div>
+                <div className="text-xs text-muted pt-1">These come out of Operations. Log them as expenses when paid.</div>
+              </div>
+            </div>
           </div>
         )}
       </div>
