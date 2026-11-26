@@ -328,7 +328,7 @@ export default function SalesPage() {
           <NavItem href="/" label="Home" />
           <NavItem href="/inventory" label="Inventory" />
           <NavItem href="/sales" label="Sales" active />
-          <NavItem href="/lots" label="Lots" />
+          <NavItem href="/expenses" label="Expenses" />
           <NavItem href="/more" label="More" />
         </div>
       </nav>

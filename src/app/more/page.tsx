@@ -13,9 +13,9 @@ export default function MorePage() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 pt-6 space-y-3">
-        <Link href="/expenses" className="card block hover:bg-paper transition">
-          <div className="font-semibold">Expenses & Budget</div>
-          <div className="text-sm text-muted">Log expenses, view envelopes</div>
+        <Link href="/lots" className="card block hover:bg-paper transition">
+          <div className="font-semibold">Lots</div>
+          <div className="text-sm text-muted">Purchase lots and what sold</div>
         </Link>
         <Link href="/financials" className="card block hover:bg-paper transition">
           <div className="font-semibold">Financials</div>
@@ -56,7 +56,7 @@ export default function MorePage() {
           <NavItem href="/" label="Home" />
           <NavItem href="/inventory" label="Inventory" />
           <NavItem href="/sales" label="Sales" />
-          <NavItem href="/lots" label="Lots" />
+          <NavItem href="/expenses" label="Expenses" />
           <NavItem href="/more" label="More" active />
         </div>
       </nav>

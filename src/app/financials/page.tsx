@@ -119,7 +119,7 @@ export default function FinancialsPage() {
           <NavItem href="/" label="Home" />
           <NavItem href="/inventory" label="Inventory" />
           <NavItem href="/sales" label="Sales" />
-          <NavItem href="/lots" label="Lots" />
+          <NavItem href="/expenses" label="Expenses" />
           <NavItem href="/more" label="More" active />
         </div>
       </nav>

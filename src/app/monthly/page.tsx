@@ -191,7 +191,7 @@ export default function MonthlyPage() {
           <a href="/" className="flex-1 py-3 text-center text-xs font-medium text-muted">Home</a>
           <a href="/inventory" className="flex-1 py-3 text-center text-xs font-medium text-muted">Inventory</a>
           <a href="/sales" className="flex-1 py-3 text-center text-xs font-medium text-muted">Sales</a>
-          <a href="/lots" className="flex-1 py-3 text-center text-xs font-medium text-muted">Lots</a>
+          <a href="/expenses" className="flex-1 py-3 text-center text-xs font-medium text-muted">Expenses</a>
           <a href="/more" className="flex-1 py-3 text-center text-xs font-medium text-ink font-bold">More</a>
         </div>
       </nav>

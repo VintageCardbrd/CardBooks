@@ -152,7 +152,7 @@ export default function LotsPage() {
           <NavItem href="/" label="Home" />
           <NavItem href="/inventory" label="Inventory" />
           <NavItem href="/sales" label="Sales" />
-          <NavItem href="/lots" label="Lots" active />
+          <NavItem href="/expenses" label="Expenses" active />
           <NavItem href="/more" label="More" />
         </div>
       </nav>

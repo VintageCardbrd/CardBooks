@@ -241,7 +241,7 @@ export default function InventoryPage() {
           <NavItem href="/" label="Home" />
           <NavItem href="/inventory" label="Inventory" active />
           <NavItem href="/sales" label="Sales" />
-          <NavItem href="/lots" label="Lots" />
+          <NavItem href="/expenses" label="Expenses" />
           <NavItem href="/more" label="More" />
         </div>
       </nav>
