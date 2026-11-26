@@ -232,7 +232,11 @@ export default function ExpensesPage() {
                 <div className="space-y-2">
                   {fixedCosts.map((fc) => {
                     const monthly = fc.frequency === 'yearly' ? Number(fc.amount) / 12 : Number(fc.amount);
-                    const last = expenses.find((e) => e.category === 'Software' || e.vendor?.toLowerCase().includes(fc.name.toLowerCase()) || e.notes?.toLowerCase().includes(fc.name.toLowerCase()));
+                    const last = expenses.find((e) => 
+                      (e.vendor && e.vendor.toLowerCase().includes(fc.name.toLowerCase())) ||
+                      (e.notes && e.notes.toLowerCase().includes(fc.name.toLowerCase())) ||
+                      (e.category && e.category.toLowerCase().includes(fc.name.toLowerCase()))
+                    );
                     return (
                       <div key={fc.id} className="card">
                         <div className="flex justify-between">
