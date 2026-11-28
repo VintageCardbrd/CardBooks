@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense, logCardPayment, getFixedCosts } from '@/lib/expenses';
+import { getExpenses, addExpense, getBudgetBooks, updateBudgetBook, deleteExpense, logCardPayment, getFixedCosts, updateFixedCostSetAside } from '@/lib/expenses';
 
 const CATEGORIES = [
   'Card Purchase',
@@ -115,6 +115,10 @@ export default function ExpensesPage() {
 
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
+  const opsBalance = books.find((b) => b.key === 'operations')?.value || 0;
+  const totalSetAside = fixedCosts.reduce((s, fc) => s + Number(fc.set_aside || 0), 0);
+  const opsAvailable = Number(opsBalance) - totalSetAside;
+
   const alloc = { inventory: 65, operations: 20, paycheck: 15 };
   for (const b of books) {
     if (b.key === 'alloc_inventory') alloc.inventory = Number(b.value);
@@ -225,7 +229,16 @@ export default function ExpensesPage() {
             </div>
 
             <div>
-              <div className="text-sm font-semibold mb-2">Operations fixed costs</div>
+              <div className="text-sm font-semibold mb-2">Operations</div>
+              <div className="card text-sm space-y-1">
+                <div className="flex justify-between"><span>Balance</span><span>${Number(opsBalance).toFixed(0)}</span></div>
+                <div className="flex justify-between"><span>Set aside</span><span>${totalSetAside.toFixed(0)}</span></div>
+                <div className="flex justify-between font-semibold border-t border-line pt-1"><span>Available</span><span className={opsAvailable >= 0 ? 'text-green-700' : 'text-red-700'}>${opsAvailable.toFixed(0)}</span></div>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-semibold mb-2">Fixed costs</div>
               {fixedCosts.length === 0 ? (
                 <div className="card text-center py-4 text-muted text-sm">No fixed costs set. Add them in Budget Settings.</div>
               ) : (
@@ -241,19 +254,27 @@ export default function ExpensesPage() {
                       (e.vendor && e.vendor.toLowerCase().includes(fc.name.toLowerCase())) ||
                       (e.notes && e.notes.toLowerCase().includes(fc.name.toLowerCase()))
                     );
-                    const created = new Date(fc.created_at);
-                    const monthsSince = Math.max(1, Math.floor((Date.now() - created.getTime()) / (30 * 86400000)));
-                    const setAside = isYearly ? Math.min(Number(fc.amount), monthly * monthsSince) : 0;
                     return (
                       <div key={fc.id} className="card">
-                        <div className="flex justify-between">
-                          <div className="font-medium text-sm">{fc.name}</div>
-                          <div className="font-bold text-sm">${monthly.toFixed(0)}/mo</div>
-                        </div>
-                        <div className="text-xs text-muted">
-                          {fc.frequency} · ${Number(fc.amount).toFixed(2)}
-                          {isYearly && ` · ~$${setAside.toFixed(0)} set aside`}
-                          {last ? ` · last paid ${new Date(last.spent_at).toLocaleDateString()}` : ' · not yet paid'}
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium text-sm">{fc.name}</div>
+                            <div className="text-xs text-muted">
+                              {fc.frequency} · ${Number(fc.amount).toFixed(2)} · ${monthly.toFixed(0)}/mo
+                              {last ? ` · paid ${new Date(last.spent_at).toLocaleDateString()}` : ''}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-sm">${Number(fc.set_aside || 0).toFixed(0)}</div>
+                            <button className="text-xs text-ink" onClick={async () => {
+                              const add = prompt('Add to set-aside:', '0');
+                              if (!add) return;
+                              const n = parseFloat(add);
+                              if (isNaN(n)) return;
+                              await updateFixedCostSetAside(fc.id, Number(fc.set_aside || 0) + n);
+                              await load();
+                            }}>+ Add</button>
+                          </div>
                         </div>
                       </div>
                     );

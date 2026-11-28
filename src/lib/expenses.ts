@@ -126,7 +126,16 @@ export async function updateFixedCost(id: string, cost: { name: string; amount: 
   return data;
 }
 
-export async function deleteFixedCost(id: string) {
+export async function updateFixedCostSetAside(id: string, setAside: number) {
+  const { data, error } = await supabase
+    .from('fixed_costs')
+    .update({ set_aside: setAside })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
   const { error } = await supabase.from('fixed_costs').delete().eq('id', id);
   if (error) throw error;
 }
