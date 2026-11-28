@@ -45,10 +45,6 @@ export default function MorePage() {
           <div className="font-semibold">Budget Settings</div>
           <div className="text-sm text-muted">Allocation percentages</div>
         </Link>
-        <div className="card opacity-60">
-          <div className="font-semibold">Sets</div>
-          <div className="text-sm text-muted">Coming later</div>
-        </div>
       </div>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-line">

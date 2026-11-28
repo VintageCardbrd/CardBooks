@@ -231,7 +231,8 @@ export default function ExpensesPage() {
               ) : (
                 <div className="space-y-2">
                   {fixedCosts.map((fc) => {
-                    const monthly = fc.frequency === 'yearly' ? Number(fc.amount) / 12 : Number(fc.amount);
+                    const isYearly = fc.frequency === 'yearly';
+                    const monthly = isYearly ? Number(fc.amount) / 12 : Number(fc.amount);
                     const last = expenses.find((e) => 
                       (fc.category && e.category === fc.category && (
                         (e.vendor && e.vendor.toLowerCase().includes(fc.name.toLowerCase())) ||
@@ -240,6 +241,9 @@ export default function ExpensesPage() {
                       (e.vendor && e.vendor.toLowerCase().includes(fc.name.toLowerCase())) ||
                       (e.notes && e.notes.toLowerCase().includes(fc.name.toLowerCase()))
                     );
+                    const created = new Date(fc.created_at);
+                    const monthsSince = Math.max(1, Math.floor((Date.now() - created.getTime()) / (30 * 86400000)));
+                    const setAside = isYearly ? Math.min(Number(fc.amount), monthly * monthsSince) : 0;
                     return (
                       <div key={fc.id} className="card">
                         <div className="flex justify-between">
@@ -248,6 +252,7 @@ export default function ExpensesPage() {
                         </div>
                         <div className="text-xs text-muted">
                           {fc.frequency} · ${Number(fc.amount).toFixed(2)}
+                          {isYearly && ` · ~$${setAside.toFixed(0)} set aside`}
                           {last ? ` · last paid ${new Date(last.spent_at).toLocaleDateString()}` : ' · not yet paid'}
                         </div>
                       </div>
