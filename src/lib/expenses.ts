@@ -136,6 +136,8 @@ export async function updateFixedCostSetAside(id: string, setAside: number) {
   if (error) throw error;
   return data;
 }
+
+export async function deleteFixedCost(id: string) {
   const { error } = await supabase.from('fixed_costs').delete().eq('id', id);
   if (error) throw error;
 }
